@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import _LeftMenu from "./components/_LeftMenu";
 import MainPage from "./pages/MainPage";
+import IssuePage from "./pages/IssuePage";
 
 const App = () => {
 
@@ -18,8 +19,10 @@ const App = () => {
                     <_Navigation />
                     <_LeftMenu />
                     <Routes>
+                        <Route path="/" element={<MainPage />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/main" element={<MainPage />} />
+                        <Route path="/issue" element={<IssuePage />} />
                     </Routes>
                 </Grid>
             </Router>

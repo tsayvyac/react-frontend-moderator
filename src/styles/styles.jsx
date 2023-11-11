@@ -29,6 +29,19 @@ const useStyles = makeStyles((theme) => ({
         marginBottom:'30px',
         justifyContent: 'flex-start'
     },
+    buttonGrid: {
+        display:'flex',
+        flexDirection:'row',
+        marginTop:'30px',
+        marginBottom:'30px',
+        justifyContent: 'space-around'
+    },
+    buttonSmallContainer:{
+        width:'250px',
+        display:'flex',
+        flexDirection:'row',
+        justifyContent: 'space-between'
+    },
 
     testBorders:{
         border:'1px solid black'
@@ -45,6 +58,7 @@ const useStyles = makeStyles((theme) => ({
     paginationContainer: {
         justifyContent:"center"
     }
+
 }));
 
 export default useStyles;

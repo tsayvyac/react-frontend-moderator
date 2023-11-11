@@ -16,7 +16,7 @@ const _LeftMenu = () => {
                     <Badge badgeContent={1} color="error">
                         <ErrorRoundedIcon className={classes.leftMenuIconStyle} />
                     </Badge>
-                    <Button variant="text">Issues</Button>
+                    <Button variant="text" href = "/main">Issues</Button>
                 </div>
                 <div>
                     <PeopleIcon className={classes.leftMenuIconStyle} />

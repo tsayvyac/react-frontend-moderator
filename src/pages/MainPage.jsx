@@ -84,7 +84,7 @@ const MainPage = () => {
                         </Box>
                     </CardContent>
                     <CardActions>
-                        <Button size="small">More</Button>
+                        <Button size="small" href = '/issue'>More</Button>
                     </CardActions>
                 </Card>
             </Grid>
