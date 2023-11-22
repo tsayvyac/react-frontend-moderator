@@ -1,17 +1,10 @@
 import {Card, CardActions, CardContent, Grid, Typography} from "@material-ui/core";
 import {
+    Alert,
     Box,
     Button,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Pagination,
-    Paper,
-    Select,
-    TextField
+    Snackbar
 } from "@mui/material";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 import React, {useEffect, useState} from "react";
 import useStyles from "../styles/styles";
 import Avatar from "@mui/material/Avatar";
@@ -45,7 +38,6 @@ const UserActionPage = () => {
                 <Card className={classes.userActionCardStyle}>
                     <CardContent>
                         <Grid container irection="column" spacing={2}>
-
                             <Grid container spacing={2}>
                                 <Grid item xs={2}>
                                     <Box className={classes.mainBoxInCard}>
@@ -75,19 +67,15 @@ const UserActionPage = () => {
                     </CardContent>
                 </Card>
             </Grid>
-            <Box>
-                <Dialog open={open} onClose={handleClose} classes={{paper:classes.modalBox}} >
-                    <DialogTitle>Info</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            User has been {flag ? "blocked" : "unblocked"}
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleClose}>Close</Button>
-                    </DialogActions>
-                </Dialog>
-            </Box>
+                    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}  sx={{width:"67vw"}} anchorOrigin={{
+                        vertical: "top",
+                        horizontal: "center",
+                    }}>
+
+                        <Alert onClose={handleClose} severity="info" sx={{ width: '100%' , backgroundColor:"lightblue"}}>
+                            User was {flag ? "blocked" : "unblocked"}
+                        </Alert>
+                    </Snackbar>
         </React.Fragment>
     )
 }
