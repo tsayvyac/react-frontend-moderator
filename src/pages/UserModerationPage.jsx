@@ -15,6 +15,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Checkbox from '@mui/material/Checkbox';
+import Avatar from '@mui/material/Avatar';
 
 
 const usersText =
@@ -33,10 +34,20 @@ const UserModerationPage = () => {
     }
     const classes = useStyles();
     const userList = JSON.parse(usersText);
-    const rows = userList.users.map(user => { user.name += (" " + user.surname); return user; });
+    const rows = userList.users.map(user => { 
+        const r ={
+            name: user.name + ' ' + user.surname,
+            avatar: 'https://images.pexels.com/photos/13037579/pexels-photo-13037579.jpeg',
+        }
+        user.name = r;
+        return user;
+    })
+        
 
     const columns = [
-        { field: 'name', headerName: 'User', width: 300 },
+        { 
+            field: 'name', headerName: 'User', width: 300, renderCell: (params) =>  <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name}/><Grid item style={{margin:"10px"}}>{params.value.name} </Grid></Grid> 
+        },
         {
             field: 'email',
             headerName: 'Email',
