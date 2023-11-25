@@ -19,7 +19,7 @@ import Avatar from '@mui/material/Avatar';
 
 
 const usersText =
-    '{"users" : [{"name": "Ihor","surname": "Dagon","role": "ululu","email": "bobo@gmail.com","status": "active", "id":1}]}';
+    '{"users" : [{"name": "Ihor","surname": "Dagon","role": "ululu","email": "bobo@gmail.com","status": "active", "id":1},{"name": "Pavlo","surname": "Dagon","role": "Admin","email": "bob2o@gmail.com","status": "banned", "id":2}]}';
 
 const UserModerationPage = () => {
     const [status, setStatus] = React.useState('');
@@ -34,19 +34,21 @@ const UserModerationPage = () => {
     }
     const classes = useStyles();
     const userList = JSON.parse(usersText);
-    const rows = userList.users.map(user => { 
-        const r ={
+    const rows = userList.users.map(user => {
+        const r = {
             name: user.name + ' ' + user.surname,
             avatar: 'https://images.pexels.com/photos/13037579/pexels-photo-13037579.jpeg',
         }
         user.name = r;
         return user;
     })
-        
+
 
     const columns = [
-        { 
-            field: 'name', headerName: 'User', width: 300, renderCell: (params) =>  <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name}/><Grid item style={{margin:"10px"}}>{params.value.name} </Grid></Grid> 
+        {
+            field: 'name', headerName: 'User',
+            width: 300,
+            renderCell: (params) => <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name} /><Grid item style={{ margin: "10px" }}>{params.value.name} </Grid></Grid>
         },
         {
             field: 'email',
@@ -58,11 +60,37 @@ const UserModerationPage = () => {
             field: 'role',
             headerName: 'Role',
             width: 160,
+           
         },
         {
             field: 'status',
             headerName: 'Account status',
             width: 160,
+            renderCell:
+            (params) =>
+            {
+                const status = params.value;
+                
+                let state = 'default';
+                if(status === "banned")                
+                {
+                    state = "warning";
+                }
+                
+                    
+                
+                return (
+                    <Chip
+                        label = {status}
+                        color = {state}
+                        />
+                )
+            }
+        },
+        {
+            field: 'id',
+            headerName: 'ID',
+            width: 100,
         },
     ];
 
@@ -118,7 +146,7 @@ const UserModerationPage = () => {
                     <Button variant='contained'>New user</Button>
                 </Grid>
             </Grid>
-            
+
 
             <DataGrid
                 rows={rows}
