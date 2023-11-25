@@ -1,12 +1,9 @@
-import {Card, CardActions, CardContent, CardHeader, CardMedia, Grid, Typography} from "@material-ui/core";
-import {Box, Button, FormControl, InputLabel, MenuItem, Pagination, Select, TextField} from "@mui/material";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
+import {Card, CardContent, CardHeader, CardMedia, Grid, Typography} from "@material-ui/core";
+import {Button} from "@mui/material";
 import React from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
-import { minWidth } from "@material-ui/system";
-import bananaImage  from "../img/banana.jpg"
-import { classExpression } from "@babel/types";
+import bananaImage from "../img/banana.jpg"
 
 const IssuePage = () => {
 

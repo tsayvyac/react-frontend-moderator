@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme) => ({
         marginBottom:'30px',
         justifyContent: 'flex-start'
     },
+
     buttonGrid: {
         display:'flex',
         flexDirection:'row',
@@ -46,6 +47,12 @@ const useStyles = makeStyles((theme) => ({
     testBorders:{
         border:'1px solid black'
     },
+
+    testAlignCenter:{
+        display:"flex",
+        justifyContent:"center"
+    },
+
     topHeaderInputItems: {
         marginLeft:"11%"
     },
@@ -58,6 +65,7 @@ const useStyles = makeStyles((theme) => ({
     paginationContainer: {
         justifyContent:"center"
     },
+
     userManagementCard:{
         margin: 'auto',
         padding: '5px'
@@ -66,6 +74,27 @@ const useStyles = makeStyles((theme) => ({
         justifyContent:'space-between',
         padding: '10px',
         verticalAlign: 'center'
+
+
+    // User Action Element Styles
+    userActionCardStyle: {
+        height: '15vw',
+        marginTop: '50px'
+    },
+
+    mainBoxInCard: {
+        display:'flex',
+        flexDirection:"column",
+        justifyContent:"center",
+        alignItems:"center",
+    },
+
+    modalBox: {
+        position: "absolute",
+        top: "-35%",
+        width:"40vw",
+        height:"14vh"
+
     }
 }));
 
