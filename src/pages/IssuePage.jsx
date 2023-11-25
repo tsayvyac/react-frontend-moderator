@@ -22,7 +22,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
     const classes = useStyles();
     console.log(classes.topHeader)
     return (
-        <Grid item xs={10}>
+        <Grid item xs={9}>
             <Grid container spacing={1} className={classes.topHeader}>
                 
                     <Typography variant={'h4'}>

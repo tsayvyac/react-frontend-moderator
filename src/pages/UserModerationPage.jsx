@@ -1,0 +1,180 @@
+import { Card, CardActions, CardContent, CardHeader, CardMedia, Grid, Typography } from "@material-ui/core";
+import { Box, Button, FormControl, InputLabel, MenuItem, Pagination, Select, TextField } from "@mui/material";
+import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
+import React from "react";
+import useStyles from "../styles/styles";
+import Chip from '@mui/material/Chip';
+import { minWidth } from "@material-ui/system";
+import bananaImage from "../img/banana.jpg"
+import { classExpression } from "@babel/types";
+import { DataGrid } from '@mui/x-data-grid';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Checkbox from '@mui/material/Checkbox';
+
+
+const usersText =
+    '{"users" : [{"name": "Ihor","surname": "Dagon","role": "ululu","email": "bobo@gmail.com","status": "active", "id":1}]}';
+
+const UserModerationPage = () => {
+    const [status, setStatus] = React.useState('');
+    const [role, setRole] = React.useState('');
+
+    const applyRoleChange = (e) => {
+        setRole(e.target.value);
+    }
+
+    const applyStatusChange = (e) => {
+        setStatus(e.target.value);
+    }
+    const classes = useStyles();
+    const userList = JSON.parse(usersText);
+    const rows = userList.users.map(user => { user.name += (" " + user.surname); return user; });
+
+    const columns = [
+        { field: 'name', headerName: 'User', width: 300 },
+        {
+            field: 'email',
+            headerName: 'Email',
+            type: 'email',
+            width: 300,
+        },
+        {
+            field: 'role',
+            headerName: 'Role',
+            width: 160,
+        },
+        {
+            field: 'status',
+            headerName: 'Account status',
+            width: 160,
+        },
+    ];
+
+
+
+    return (<Grid item xs={9}>
+        <Grid container spacing={1} className={classes.topHeader}>
+            <Grid xs={4} item>
+                <Typography variant={'h4'}>
+                    User management
+                </Typography>
+            </Grid>
+        </Grid>
+        <Card className={classes.userManagementCard}>
+            <Grid container className={classes.userManagementSearchItems}>
+                <Grid item xs={7} >
+                    <FormControl fullWidth style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <TextField id="outlined-basic" label="Name, email, etc..." variant="outlined" style={{ height: "50px" }} />
+                        <Box style={{ display: 'flex', flexDirection: 'row' }}>
+                            <FormControl>
+                                <InputLabel htmlFor="user-role-select-label">Role</InputLabel>
+                                <Select
+                                    id="user-role-select"
+                                    value={role}
+                                    onChange={applyRoleChange}
+                                    style={{ width: "200px", height: '50px' }}
+                                >
+                                    <MenuItem value={'all'}>All</MenuItem>
+                                    <MenuItem value={'resident'}>Resident</MenuItem>
+                                    <MenuItem value={'service'}>Public service</MenuItem>
+                                    <MenuItem value={'analyst'}>Analyst</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+                        <Box style={{ display: 'flex', flexDirection: 'row', justifyContent: "flex-end" }}>
+                            <FormControl>
+                                <InputLabel htmlFor="user-status-select-label">Status</InputLabel>
+                                <Select
+                                    id="user-status-select"
+                                    value={status}
+                                    onChange={applyStatusChange}
+                                    style={{ width: "200px", height: '50px' }}
+                                >
+                                    <MenuItem value={'all'}>All</MenuItem>
+                                    <MenuItem value={'active'}>Active</MenuItem>
+                                    <MenuItem value={'banned'}>Banned</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+                    </FormControl>
+                </Grid>
+                <Grid >
+                    <Button variant='contained'>New user</Button>
+                </Grid>
+            </Grid>
+            
+
+            <DataGrid
+                rows={rows}
+                columns={columns}
+                initialState={{
+                    pagination: {
+                        paginationModel: { page: 0, pageSize: 5 },
+                    },
+                }}
+                pageSizeOptions={[5, 10]}
+                checkboxSelection
+            />
+        </Card>
+    </Grid>);
+}
+export default UserModerationPage;
+
+/*
+<Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell padding="checkbox">User</TableCell>
+                        <TableCell align="right">Email</TableCell>
+                        <TableCell align="right">Role</TableCell>
+                        <TableCell align="right">Account status</TableCell>
+                        <TableCell align="right">ID</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+
+                    {rows.map(
+                        row => {
+                            const labelId = row.id;
+                            return (
+                                <TableRow
+                                    role="checkbox"
+                                    tabIndex={-1}
+                                    key={row.id}
+                                    sx={{ cursor: 'pointer' }}
+                                >
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            color="primary"
+                                            checked={false}
+                                            inputProps={{
+                                                'aria-labelledby': labelId,
+                                            }}
+                                        />
+                                    </TableCell>
+                                    <TableCell
+                                        component="th"
+                                        id={labelId}
+                                        scope="row"
+                                        padding="none"
+                                    >
+                                        {row.name}
+                                    </TableCell>
+                                    <TableCell align="right">{row.user}</TableCell>
+                                    <TableCell align="right">{row.email}</TableCell>
+                                    <TableCell align="right">{row.role}</TableCell>
+                                    <TableCell align="right">{row.status}</TableCell>
+                                    <TableCell align="right">{row.id}</TableCell>
+                                </TableRow>
+                            )
+                        }
+                    )}
+                </TableBody>
+            </Table>
+
+            */

@@ -9,7 +9,7 @@ const MainPage = () => {
     const classes = useStyles();
 
     return (
-        <Grid  item xs={10}>
+        <Grid  item xs={9}>
             <Grid container spacing={1} className={classes.topHeader}>
                 <Grid xs={4} item>
                     <Typography variant={'h5'}>

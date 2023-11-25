@@ -57,8 +57,16 @@ const useStyles = makeStyles((theme) => ({
 
     paginationContainer: {
         justifyContent:"center"
+    },
+    userManagementCard:{
+        margin: 'auto',
+        padding: '5px'
+    },
+    userManagementSearchItems:{
+        justifyContent:'space-between',
+        padding: '10px',
+        verticalAlign: 'center'
     }
-
 }));
 
 export default useStyles;
