@@ -66,6 +66,16 @@ const useStyles = makeStyles((theme) => ({
         justifyContent:"center"
     },
 
+    userManagementCard:{
+        margin: 'auto',
+        padding: '5px'
+    },
+    userManagementSearchItems:{
+        justifyContent:'space-between',
+        padding: '10px',
+        verticalAlign: 'center'
+    },
+
     // User Action Element Styles
     userActionCardStyle: {
         height: '15vw',
@@ -84,6 +94,7 @@ const useStyles = makeStyles((theme) => ({
         top: "-35%",
         width:"40vw",
         height:"14vh"
+
     }
 }));
 

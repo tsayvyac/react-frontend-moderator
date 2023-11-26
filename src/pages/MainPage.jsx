@@ -23,7 +23,11 @@ const MainPage = () => {
 
 
     return (
-        <Grid item xs={10}>
+
+        <Grid  item xs={9}>
+
+
+
             <Grid container spacing={1} className={classes.topHeader}>
                 <Grid item xs={4}>
                     <Typography variant={'h5'}>

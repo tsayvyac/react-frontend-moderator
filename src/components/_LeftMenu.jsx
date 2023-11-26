@@ -20,7 +20,7 @@ const _LeftMenu = () => {
                 </div>
                 <div>
                     <PeopleIcon className={classes.leftMenuIconStyle} />
-                    <Button variant="text">User management</Button>
+                    <Button variant="text" href = "/users">User management</Button>
                 </div>
             </Box>
         </Grid>

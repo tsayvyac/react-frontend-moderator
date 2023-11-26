@@ -10,6 +10,7 @@ import MainPage from "./pages/MainPage";
 import IssuePage from "./pages/IssuePage";
 import UserActionPage from "./pages/UserActionPage";
 import AddUserPage from "./pages/AddUserPage";
+import UserModerationPage from "./pages/UserModerationPage";
 
 const App = () => {
 
@@ -25,8 +26,12 @@ const App = () => {
                         <Route path="/login" element={<Login />} />
                         <Route path="/main" element={<MainPage />} />
                         <Route path="/issue" element={<IssuePage />} />
+
+                        <Route path="/users" element={<UserModerationPage />} />
+
                         <Route path="/users/:id" element={<UserActionPage />} />
                         <Route path="/users/add" element={<AddUserPage />} />
+
                     </Routes>
                 </Grid>
             </Router>
