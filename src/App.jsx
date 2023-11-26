@@ -10,6 +10,7 @@ import MainPage from "./pages/MainPage";
 import IssuePage from "./pages/IssuePage";
 import UserActionPage from "./pages/UserActionPage";
 import AddUserPage from "./pages/AddUserPage";
+import UserModerationPage from "./pages/UserModerationPage";
 
 const App = () => {
 

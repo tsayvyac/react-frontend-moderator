@@ -32,6 +32,7 @@ const UserModerationPage = () => {
     const applyStatusChange = (e) => {
         setStatus(e.target.value);
     }
+
     const classes = useStyles();
     const userList = JSON.parse(usersText);
     const rows = userList.users.map(user => {
@@ -143,7 +144,7 @@ const UserModerationPage = () => {
                     </FormControl>
                 </Grid>
                 <Grid >
-                    <Button variant='contained'>New user</Button>
+                    <Button variant='contained' href = 'users/add'>New user</Button>
                 </Grid>
             </Grid>
 

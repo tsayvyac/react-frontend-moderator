@@ -74,7 +74,7 @@ const useStyles = makeStyles((theme) => ({
         justifyContent:'space-between',
         padding: '10px',
         verticalAlign: 'center'
-
+    },
 
     // User Action Element Styles
     userActionCardStyle: {
