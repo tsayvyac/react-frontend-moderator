@@ -11,7 +11,7 @@ import Avatar from "@mui/material/Avatar";
 
 const UserActionPage = () => {
 
-    const [flag, setFlag] = useState(false)
+    const [flag, setFlag] = React.useState(false)
     const [open, setOpen] = React.useState(false);
 
     const classes = useStyles();
@@ -56,11 +56,9 @@ const UserActionPage = () => {
                             </Grid>
                         </Grid>
 
-                        <Grid xs={3} item>
+                        <Grid xs={4} item>
                             <CardActions>
-                                <CardActions>
                                     <Button size="small" sx={{marginTop:10}} onClick={() => handleClickOpen()}>{flag ? "Unblock" : "Block"}</Button>
-                                </CardActions>
                             </CardActions>
                         </Grid>
 

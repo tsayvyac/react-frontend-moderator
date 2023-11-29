@@ -25,13 +25,10 @@ const App = () => {
                         <Route path="/" element={<MainPage />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/main" element={<MainPage />} />
-                        <Route path="/issue" element={<IssuePage />} />
-
+                        <Route path="/:id" element={<IssuePage />} />
                         <Route path="/users" element={<UserModerationPage />} />
-
                         <Route path="/users/:id" element={<UserActionPage />} />
                         <Route path="/users/add" element={<AddUserPage />} />
-
                     </Routes>
                 </Grid>
             </Router>
