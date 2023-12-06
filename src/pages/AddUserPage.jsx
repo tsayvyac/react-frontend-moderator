@@ -2,16 +2,10 @@ import Container from "@mui/material/Container";
 import {CssBaseline, Grid, Typography} from "@material-ui/core";
 
 import React, {useEffect, useState} from "react";
-import useStyles from "../styles/styles";
 import {Box, Button, Divider, FormControl, FormLabel, Radio, RadioGroup, TextField} from "@mui/material";
-import Avatar from "@mui/material/Avatar";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import {Link} from "react-router-dom";
-import {Copyright} from "@material-ui/icons";
-
 const AddUserPage = () => {
+
 
 
     function handleSubmit(e) {
@@ -25,7 +19,6 @@ const AddUserPage = () => {
                 <Divider />
             </Box>
             <Container component="main" maxWidth={"xs"}>
-                <CssBaseline />
                 <Box
                     sx={{
                         marginTop: 8,
@@ -34,16 +27,6 @@ const AddUserPage = () => {
                         alignItems: 'center',
                     }}
                 >
-                    <Box sx={{width:"100%"}}>
-                        <Typography variant={"subtitle2"}>Avatar</Typography>
-                    </Box>
-                    <Box sx={{width:"100%", display:"flex", justifyContent:"start"}}>
-                        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                        </Avatar>
-                        <Button>
-                            Upload image
-                        </Button>
-                    </Box>
 
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>

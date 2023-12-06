@@ -1,0 +1,27 @@
+{
+  "issues": [
+    {"id":"21", "photo":"ref21", "description":"amazing", "title":"amazing2", "category":"Category", "creationDate":"24-12-2023","status": "PUBLISHED", "authorId": "3", "distanceM": "789", "latitude": "-33.8688", "longitude": "151.2093", "isVisited": false},
+    {"id":"22", "photo":"ref22", "description":"fantastic", "title":"fantastic2", "category":"Category", "creationDate":"25-12-2023","status": "MODERATION", "authorId": "8", "distanceM": "234", "latitude": "51.5074", "longitude": "-0.1278", "isVisited": true},
+    {"id":"23", "photo":"ref23", "description":"awesome", "title":"awesome2", "category":"Category", "creationDate":"26-12-2023","status": "SOLVED", "authorId": "2", "distanceM": "643", "latitude": "35.6895", "longitude": "139.6917", "isVisited": false},
+    {"id":"24", "photo":"ref24", "description":"incredible", "title":"incredible2", "category":"Category", "creationDate":"27-12-2023","status": "SOLVING", "authorId": "7", "distanceM": "876", "latitude": "40.7128", "longitude": "-74.0060", "isVisited": true},
+    {"id":"25", "photo":"ref25", "description":"mind-blowing", "title":"mind-blowing2", "category":"Category", "creationDate":"28-12-2023","status": "MODERATION", "authorId": "4", "distanceM": "321", "latitude": "-22.9068", "longitude": "-43.1729", "isVisited": false},
+    {"id":"26", "photo":"ref26", "description":"jaw-dropping", "title":"jaw-dropping2", "category":"Category", "creationDate":"29-12-2023","status": "PUBLISHED", "authorId": "6", "distanceM": "567", "latitude": "41.8781", "longitude": "-87.6298", "isVisited": true},
+    {"id":"27", "photo":"ref27", "description":"stunning", "title":"stunning2", "category":"Category", "creationDate":"30-12-2023","status": "DELETED", "authorId": "1", "distanceM": "432", "latitude": "51.5099", "longitude": "-0.1337", "isVisited": false},
+    {"id":"28", "photo":"ref28", "description":"breathtaking", "title":"breathtaking2", "category":"Category", "creationDate":"31-12-2023","status": "MODERATION", "authorId": "9", "distanceM": "765", "latitude": "34.0522", "longitude": "-118.2437", "isVisited": true},
+    {"id":"29", "photo":"ref29", "description":"extraordinary", "title":"extraordinary2", "category":"Category", "creationDate":"01-01-2024","status": "SOLVING", "authorId": "10", "distanceM": "987", "latitude": "37.7749", "longitude": "-122.4194", "isVisited": false},
+    {"id":"30", "photo":"ref30", "description":"remarkable", "title":"remarkable2", "category":"Category", "creationDate":"02-01-2024","status": "MODERATION", "authorId": "12", "distanceM": "543", "latitude": "-33.8688", "longitude": "151.2093", "isVisited": true},
+    {"id":"31", "photo":"ref31", "description":"awe-inspiring", "title":"awe-inspiring2", "category":"Category", "creationDate":"03-01-2024","status": "PUBLISHED", "authorId": "11", "distanceM": "789", "latitude": "51.5074", "longitude": "-0.1278", "isVisited": false},
+    {"id":"32", "photo":"ref32", "description":"majestic", "title":"majestic2", "category":"Category", "creationDate":"04-01-2024","status": "DELETED", "authorId": "15", "distanceM": "456", "latitude": "35.6895", "longitude": "139.6917", "isVisited": true},
+    {"id":"33", "photo":"ref33", "description":"splendid", "title":"splendid2", "category":"Category", "creationDate":"05-01-2024","status": "SOLVED", "authorId": "18", "distanceM": "654", "latitude": "40.7128", "longitude": "-74.0060", "isVisited": false},
+    {"id":"34", "photo":"ref34", "description":"grand", "title":"grand2", "category":"Category", "creationDate":"06-01-2024","status": "SOLVING", "authorId": "20", "distanceM": "876", "latitude": "-22.9068", "longitude": "-43.1729", "isVisited": true},
+    {"id":"35", "photo":"ref35", "description":"spectacular", "title":"spectacular2", "category":"Category", "creationDate":"07-01-2024","status": "MODERATION", "authorId": "17", "distanceM": "234", "latitude": "41.8781", "longitude": "-87.6298", "isVisited": false},
+    {"id":"36", "photo":"ref36", "description":"marvelous", "title":"marvelous2", "category":"Category", "creationDate":"08-01-2024","status": "MODERATION", "authorId": "19", "distanceM": "543", "latitude": "51.5099", "longitude": "-0.1337", "isVisited": true},
+    {"id":"37", "photo":"ref37", "description":"wondrous", "title":"wondrous2", "category":"Category", "creationDate":"09-01-2024","status": "DELETED", "authorId": "14", "distanceM": "765", "latitude": "34.0522", "longitude": "-118.2437", "isVisited": false}
+
+
+
+
+
+
+    ]
+}
