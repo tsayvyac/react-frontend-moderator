@@ -1,25 +1,23 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
+import {useContext, useEffect, useRef, useState} from 'react';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import Tooltip from '@mui/material/Tooltip';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {Link} from "react-router-dom";
+import {initializeApp} from "firebase/app";
+import {getAuth, signInWithEmailAndPassword} from "firebase/auth";
+import AuthContext from "../apis/context/AuthProvider";
+import Cookies from 'js-cookie';
 
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="https://mui.com/">
-        Your Website
+        Better City
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -27,16 +25,74 @@ function Copyright(props) {
   );
 }
 
+export const validateEmail = (email) => {
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+};
 
 export default function Login() {
+
+    const { setAuth } = useContext(AuthContext)
+    const [error, setError] = useState("NONE-ERROR")
+    const [success, setIsSuccess] = useState(false)
+    const emailRef = useRef("")
+
+
+
+
+    const validateFields = (email, password) => {
+        setIsSuccess(false)
+        if(!email || !password) setError('Fill all fields')
+        else if(!validateEmail(email)) setError('Email format is invalid')
+        else if(password.length < 8) setError('Password must be at least 8 characters long')
+        else {setError('NONE-ERROR')
+            return true}
+        return false
+    }
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyClK4fF0-fOrs_Acg8QMRT1YMw0r2sXSwk",
+        authDomain: "ctu-nss.firebaseapp.com",
+        databaseURL: "https://ctu-nss-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "ctu-nss",
+        storageBucket: "ctu-nss.appspot.com",
+        messagingSenderId: "441926160180",
+        appId: "1:441926160180:web:0351f11bf618f2d0bddf61"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+
     const handleSubmit = (event) => {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
-      console.log({
-        email: data.get('email'),
-        password: data.get('password'),
-      });
+        let email= data.get('email')
+        let password = data.get('password')
+
+        if(validateFields(email, password)){
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    const token = user.accessToken
+                    const expTime = user.stsTokenManager.expirationTime
+                    setAuth({email, token, expTime})
+                    setIsSuccess(true)
+                    window.location = '/main';
+                })
+                .catch((error) => {
+                    setError(`${error.code} ${error.message}`)
+                });
+        }
     };
+
+    useEffect(() => {
+        emailRef.current.focus()
+    }, [error, success]);
+
   
     return (
         <Container maxWidth={false}
@@ -60,19 +116,31 @@ export default function Login() {
               alignItems: 'center'
            }}
           >
-            
             <Typography component="h1" variant="h5">
               Log in
             </Typography>
+            <Box sx={{
+                      marginTop: 1,
+                      display: error === 'NONE-ERROR' ? 'none' : 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent:'center',
+                      backgroundColor:'#EE4B2B',
+                      width:"100%",
+                      height:"25px",
+                        borderRadius:"5px",
+              }}>
+                  <Typography sx={{fontSize:"13px", color:"white"}}>{error}</Typography>
+            </Box>
             <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
               <TextField
                 margin="normal"
                 required
                 fullWidth
                 id="email"
-                label="Username"
-                name="username"
-                autoComplete="login"
+                label="Email"
+                name="email"
+                autoComplete="email"
                 autoFocus
               />
 
@@ -86,7 +154,6 @@ export default function Login() {
                 id="password"
                 autoComplete="current-password"
               />
-                <Link to="/main">
                     <Button
                         type="submit"
                         fullWidth
@@ -95,21 +162,9 @@ export default function Login() {
                     >
                         Sign In
                     </Button>
-                </Link>
-
-
-              <Grid container>
-                <Tooltip  title = "Please contact moderator">
-                <Grid item xs>
-                  <Button href="#ResetPassword" variant="outlined" disabled>
-                    Forgot password?
-                  </Button>
-                </Grid>
-                </Tooltip>
-              </Grid>
             </Box>
           </Box>
-            <Copyright sx={{ mt: 8, mb: 4 }} />
+            <Copyright sx={{ mt: 8, mb: 4 }}/>
         </Container>
 
     );

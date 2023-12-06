@@ -15,6 +15,8 @@ import React, {useEffect, useState} from "react";
 import useStyles from "../styles/styles";
 import {Link} from "react-router-dom";
 import axios from 'axios';
+import {API_BASE} from "../apis/apis";
+import Cookies from "js-cookie";
 
 
 // 1. remember sort state when changing to moderate -> all and vice verce
@@ -33,7 +35,6 @@ import axios from 'axios';
 // api?_limit=10&_page=2
 //API key: AIzaSyC6-kPQq0Hv7gacfZ_1NenpyS_a1ahV910
 // Map id: 8682b82c7c8bf444
-
 const MainPage = () => {
 
     const classes = useStyles();
@@ -46,7 +47,6 @@ const MainPage = () => {
     }
 
     // todo change impl depends on real api
-    const API_BASE = "http://localhost:8000"
     let issuesLimitOnPage = 5;
     const [isLoading, setIsLoading] = useState(true)
     const [sortState, setSortState] = useState("none")
@@ -58,7 +58,12 @@ const MainPage = () => {
 
     useEffect(() => {
         document.title = toModerate ? 'To moderate' : 'All'
-        axios.get(buildURI())
+        axios.defaults.withCredentials = true;
+        axios.get(buildURI(), {
+            headers: {
+                'Authorization': `Bearer ${Cookies.get('token')}`
+            }
+        })
             .then(response => {
                 setIssues(response.data)
                 setTotalPages(Math.ceil(response.headers.get('X-Total-Count')/issuesLimitOnPage))
@@ -108,7 +113,6 @@ const MainPage = () => {
        setSortState(val)
    }
 
-
     if(isLoading) {
         return (
             <Grid  item xs={10}>
@@ -118,6 +122,10 @@ const MainPage = () => {
             </Grid>
         );
     }
+
+
+
+
 
 
     return (

@@ -1,36 +1,45 @@
 import {Card, CardActions, CardContent, Grid, Typography} from "@material-ui/core";
-import {
-    Alert,
-    Box,
-    Button,
-    Snackbar
-} from "@mui/material";
+import {Alert, Box, Button, Snackbar} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import useStyles from "../styles/styles";
 import Avatar from "@mui/material/Avatar";
+import axios from "axios";
+import {API_BASE} from "../apis/apis";
 
 const UserActionPage = () => {
 
-    const [flag, setFlag] = React.useState(false)
-    const [open, setOpen] = React.useState(false);
+    const params = new URLSearchParams(window.location.search);
 
+    const [flag, setFlag] = useState(false)
+    const [open, setOpen] = useState(false);
+    const [user, setUser] = useState({status:'', name:'', description:'', photo:''})
+    const [role, setRole] = useState(params.get('role'))
+    const [id, setId] = useState(params.get('id'))
     const classes = useStyles();
-    const username = "lol";
-    const role  = "service";
-    const publicatedIssues = 3;
 
-    useEffect(() => {
-        console.log('Action with user')
-    }, [flag]);
+
+
+    const getUserInfo = () => {
+        axios.get(`${API_BASE}/${role}?id=${id}`).then(res => {
+            console.log(res.data)
+            setUser({status:res.data[0].status, name:res.data[0].name, description:res.data[0].description, photo:res.data[0].photo})
+        }).catch(error => console.log(error))
+    }
 
     const handleClickOpen = () => {
-        setFlag(!flag)
+        axios.put(`${API_BASE}/${role}/${id}`, {
+            status:flag ? "ACTIVE" : "BLOCKED", name:user.name, description:user.description, photo:user.photo}).then(res => {  setFlag(!flag)})
         setOpen(true);
+        setFlag(!flag)
     };
 
     const handleClose = () => {
         setOpen(false);
     };
+
+    useEffect(() => {
+        getUserInfo()
+    },[flag]);
 
     return (
         <React.Fragment>
@@ -47,10 +56,10 @@ const UserActionPage = () => {
                                 </Grid>
                                 <Grid  xs={6} item>
                                     <Box>
-                                        <Typography variant="h6" component="div">Name: {username}</Typography>
+                                        <Typography variant="h6" component="div">Name: {user.name}</Typography>
                                         <Typography variant="h6" component="div">Role: {role}</Typography>
-                                        <Typography variant="h6" component="div">Status: {flag ? "Banned" : "Not banned"}</Typography>
-                                        <Typography variant="h6" component="div">Publicated Issues: {publicatedIssues}</Typography>
+                                        <Typography variant="h6" component="div">Status: {user.status}</Typography>
+                                        <Typography variant="h6" component="div">Info: {user.description}</Typography>
                                     </Box>
                                 </Grid>
                             </Grid>

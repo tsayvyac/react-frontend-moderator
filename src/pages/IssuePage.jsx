@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardMedia, Grid, Typography } from "@material-ui/core";
-import { Button } from "@mui/material";
+import {Card, CardContent, CardHeader, CardMedia, Grid, Typography} from "@material-ui/core";
+import {Button} from "@mui/material";
 import React from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';

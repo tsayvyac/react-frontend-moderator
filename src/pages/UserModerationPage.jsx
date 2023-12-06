@@ -1,20 +1,9 @@
-import { Card, CardActions, CardContent, CardHeader, CardMedia, Grid, Typography } from "@material-ui/core";
-import { Box, Button, FormControl, InputLabel, MenuItem, Pagination, Select, TextField } from "@mui/material";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
+import {Card, Grid, Typography} from "@material-ui/core";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, TextField} from "@mui/material";
 import React from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
-import { minWidth } from "@material-ui/system";
-import bananaImage from "../img/banana.jpg"
-import { classExpression } from "@babel/types";
-import { DataGrid } from '@mui/x-data-grid';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
+import {DataGrid} from '@mui/x-data-grid';
 import Avatar from '@mui/material/Avatar';
 
 
