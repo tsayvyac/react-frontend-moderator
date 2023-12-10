@@ -1,0 +1,11 @@
+{
+  "files": {
+    "main.js": "/react-frontend-moderator/static/js/main.7eae5404.js",
+    "static/media/banana.jpg": "/react-frontend-moderator/static/media/banana.510610c8deafac68e26d.jpg",
+    "index.html": "/react-frontend-moderator/index.html",
+    "main.7eae5404.js.map": "/react-frontend-moderator/static/js/main.7eae5404.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.7eae5404.js"
+  ]
+}
