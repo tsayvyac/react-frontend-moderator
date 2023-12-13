@@ -19,20 +19,7 @@ import {API_BASE} from "../apis/apis";
 import Cookies from "js-cookie";
 
 
-// 1. remember sort state when changing to moderate -> all and vice verce
-// 2. prepare logic for pagination request
-// 3. prepare login in form to add user, e.g. make variables ...
-// 4. prepare variable in user action page ...
-// 5. prepare request in login page -- try firebase
 
-// prepare variables:
-// make method for waiting
-// make method to request data
-// make method that do logic
-// make method for display data
-
-//  npx json-server --watch apis/data/db.json --port 8000
-// api?_limit=10&_page=2
 //API key: AIzaSyC6-kPQq0Hv7gacfZ_1NenpyS_a1ahV910
 // Map id: 8682b82c7c8bf444
 const MainPage = () => {

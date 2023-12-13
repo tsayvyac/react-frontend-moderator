@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import {Link} from "react-router-dom";
 import {initializeApp} from "firebase/app";
-import {getAuth, signInWithEmailAndPassword} from "firebase/auth";
+import {getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword} from "firebase/auth";
 import AuthContext from "../apis/context/AuthProvider";
 import Cookies from 'js-cookie';
 
@@ -47,7 +47,6 @@ export default function Login() {
         setIsSuccess(false)
         if(!email || !password) setError('Fill all fields')
         else if(!validateEmail(email)) setError('Email format is invalid')
-        else if(password.length < 8) setError('Password must be at least 8 characters long')
         else {setError('NONE-ERROR')
             return true}
         return false
@@ -81,7 +80,8 @@ export default function Login() {
                     const expTime = user.stsTokenManager.expirationTime
                     setAuth({email, token, expTime})
                     setIsSuccess(true)
-                    window.location = '/main';
+                    // window.location = '/main';
+                    console.log(user)
                 })
                 .catch((error) => {
                     setError(`${error.code} ${error.message}`)
@@ -90,7 +90,6 @@ export default function Login() {
     };
 
     useEffect(() => {
-        emailRef.current.focus()
     }, [error, success]);
 
   
