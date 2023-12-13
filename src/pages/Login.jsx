@@ -42,7 +42,6 @@ export default function Login() {
 
 
 
-
     const validateFields = (email, password) => {
         setIsSuccess(false)
         if(!email || !password) setError('Fill all fields')
@@ -90,6 +89,7 @@ export default function Login() {
     };
 
     useEffect(() => {
+        //emailRef.current.focus()
     }, [error, success]);
 
   
