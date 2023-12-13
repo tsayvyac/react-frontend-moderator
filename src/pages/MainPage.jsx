@@ -203,7 +203,7 @@ const MainPage = () => {
                                 </Box>
                             </CardContent>
                             <CardActions>
-                                <Button size="small"><Link to={'/'+issue.id}>More</Link></Button>
+                                <Button size="small"><Link to={'/issues/'+issue.id}>More</Link></Button>
                             </CardActions>
                         </Card>
                     </Grid>
