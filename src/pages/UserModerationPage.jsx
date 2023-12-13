@@ -5,14 +5,19 @@ import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
 import {DataGrid} from '@mui/x-data-grid';
 import Avatar from '@mui/material/Avatar';
-
+import { API_BASE } from "../apis/apis";
+import axios from "axios";
+import { useEffect } from "react";
+import Cookies from "js-cookie";
+import Link from "@mui/material/Link";
 
 const usersText =
     '{"users" : [{"name": "Ihor","surname": "Dagon","role": "ululu","email": "bobo@gmail.com","status": "active", "id":1},{"name": "Pavlo","surname": "Dagon","role": "Admin","email": "bob2o@gmail.com","status": "banned", "id":2}]}';
 
 const UserModerationPage = () => {
     const [status, setStatus] = React.useState('');
-    const [role, setRole] = React.useState('');
+    const [role, setRole] = React.useState('residents');
+    const [users, setUsers] = React.useState([]);
 
     const applyRoleChange = (e) => {
         setRole(e.target.value);
@@ -20,25 +25,51 @@ const UserModerationPage = () => {
 
     const applyStatusChange = (e) => {
         setStatus(e.target.value);
+        console.log("Stting staus")
     }
 
     const classes = useStyles();
     const userList = JSON.parse(usersText);
-    const rows = userList.users.map(user => {
+
+    function buildURI() {
+        let uri = `${API_BASE}/${role==='residents'?"residents":"analysts"}`
+        if (status !== '' & status !== 'all')
+        {
+            uri += `?status=${status}`
+        }
+        console.log(uri);
+        return uri;
+    }
+
+
+    let rows = users.map(user => {
         const r = {
-            name: user.name + ' ' + user.surname,
+            name: user.firstName + ' ' + user.lastName,
             avatar: 'https://images.pexels.com/photos/13037579/pexels-photo-13037579.jpeg',
+            id: user.id
         }
         user.name = r;
         return user;
     })
 
+    useEffect(() => {
+        axios.defaults.withCredentials = true;
+        axios.get(buildURI(), {
+            headers: {
+                'Authorization': `Bearer ${Cookies.get('token')}`
+            }
+        })
+            .then(response => {
+                setUsers(response.data)
+            })
+            .catch(error => console.log(error))
+    }, [role, status]);
 
     const columns = [
         {
             field: 'name', headerName: 'User',
             width: 300,
-            renderCell: (params) => <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name} /><Grid item style={{ margin: "10px" }}>{params.value.name} </Grid></Grid>
+            renderCell: (params) => <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name} /><Grid item style={{ margin: "10px" }}><Link href = {"user?role="+role+'&id='+params.value.id}>{params.value.name} </Link></Grid></Grid>
         },
         {
             field: 'email',
@@ -62,7 +93,7 @@ const UserModerationPage = () => {
                 const status = params.value;
                 
                 let state = 'default';
-                if(status === "banned")                
+                if(status === "blocked")                
                 {
                     state = "warning";
                 }
@@ -108,10 +139,8 @@ const UserModerationPage = () => {
                                     onChange={applyRoleChange}
                                     style={{ width: "200px", height: '50px' }}
                                 >
-                                    <MenuItem value={'all'}>All</MenuItem>
-                                    <MenuItem value={'resident'}>Resident</MenuItem>
-                                    <MenuItem value={'service'}>Public service</MenuItem>
-                                    <MenuItem value={'analyst'}>Analyst</MenuItem>
+                                    <MenuItem value={'residents'}>Resident</MenuItem>
+                                    <MenuItem value={'services'}>Public service</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
@@ -126,7 +155,7 @@ const UserModerationPage = () => {
                                 >
                                     <MenuItem value={'all'}>All</MenuItem>
                                     <MenuItem value={'active'}>Active</MenuItem>
-                                    <MenuItem value={'banned'}>Banned</MenuItem>
+                                    <MenuItem value={'blocked'}>Blocked</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
