@@ -129,7 +129,7 @@ const MainPage = () => {
 
 
     return (
-        <Grid  item xs={10}>
+        <Grid  item xs={9}>
             <Grid container spacing={1} className={classes.topHeader}>
                 <Grid item xs={4}>
                     <Typography variant={'h5'}>
@@ -203,7 +203,7 @@ const MainPage = () => {
                                 </Box>
                             </CardContent>
                             <CardActions>
-                                <Button size="small"><Link to={'/issues/'+issue.id}>More</Link></Button>
+                                <Button size="small"><Link to={'/issues?id='+issue.id}>More</Link></Button>
                             </CardActions>
                         </Card>
                     </Grid>

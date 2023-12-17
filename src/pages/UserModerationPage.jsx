@@ -11,13 +11,25 @@ import { useEffect } from "react";
 import Cookies from "js-cookie";
 import Link from "@mui/material/Link";
 
-const usersText =
-    '{"users" : [{"name": "Ihor","surname": "Dagon","role": "ululu","email": "bobo@gmail.com","status": "active", "id":1},{"name": "Pavlo","surname": "Dagon","role": "Admin","email": "bob2o@gmail.com","status": "banned", "id":2}]}';
 
 const UserModerationPage = () => {
+    
+    let search = window.location.search;
+    const params = new URLSearchParams(search);
+    if(!params.get('page')) {
+        params.set('page', '0')
+        window.history.pushState({page:params.toString()} , null, '?page=0')
+    }
     const [status, setStatus] = React.useState('');
     const [role, setRole] = React.useState('residents');
     const [users, setUsers] = React.useState([]);
+    const [searchState, setSearchState] = React.useState("");
+
+
+    const [paginationModel, setPaginationModel] = React.useState({
+        page: 0,
+        pageSize: 5,
+      });
 
     const applyRoleChange = (e) => {
         setRole(e.target.value);
@@ -28,15 +40,22 @@ const UserModerationPage = () => {
         console.log("Stting staus")
     }
 
+    function searchHandler(title) {
+        setSearchState(title)
+    }
+
     const classes = useStyles();
-    const userList = JSON.parse(usersText);
 
     function buildURI() {
-        let uri = `${API_BASE}/${role==='residents'?"residents":"analysts"}`
+        let uri = `${API_BASE}/${role}?_limit=${paginationModel.pageSize}&_page=${(parseInt(paginationModel.page)+1)}`
         if (status !== '' & status !== 'all')
         {
-            uri += `?status=${status}`
+            uri += `&status=${status}`
         }
+        if(searchState.length !== 0) {
+            uri += `&firstName_like=${searchState}`
+        }
+
         console.log(uri);
         return uri;
     }
@@ -53,6 +72,8 @@ const UserModerationPage = () => {
     })
 
     useEffect(() => {
+        let pg = parseInt(params.get('page'));
+        window.history.replaceState({page:pg.toString()}, null, '?page='+(parseInt(paginationModel.page)+1))
         axios.defaults.withCredentials = true;
         axios.get(buildURI(), {
             headers: {
@@ -63,7 +84,7 @@ const UserModerationPage = () => {
                 setUsers(response.data)
             })
             .catch(error => console.log(error))
-    }, [role, status]);
+    }, [role, status, paginationModel, searchState]);
 
     const columns = [
         {
@@ -98,8 +119,6 @@ const UserModerationPage = () => {
                     state = "warning";
                 }
                 
-                    
-                
                 return (
                     <Chip
                         label = {status}
@@ -129,7 +148,7 @@ const UserModerationPage = () => {
             <Grid container className={classes.userManagementSearchItems}>
                 <Grid item xs={7} >
                     <FormControl fullWidth style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <TextField id="outlined-basic" label="Name, email, etc..." variant="outlined" style={{ height: "50px" }} />
+                        <TextField id="outlined-basic" label="Name" variant="outlined" style={{ height: "50px" }}  onChange={(e) => searchHandler( e.target.value)}/>
                         <Box style={{ display: 'flex', flexDirection: 'row' }}>
                             <FormControl>
                                 <InputLabel htmlFor="user-role-select-label">Role</InputLabel>
@@ -169,12 +188,11 @@ const UserModerationPage = () => {
 
             <DataGrid
                 rows={rows}
+                rowCount={2312}
                 columns={columns}
-                initialState={{
-                    pagination: {
-                        paginationModel: { page: 0, pageSize: 5 },
-                    },
-                }}
+                paginationModel={paginationModel}
+                paginationMode="server"
+                onPaginationModelChange={setPaginationModel}
                 pageSizeOptions={[5, 10]}
                 checkboxSelection
             />
