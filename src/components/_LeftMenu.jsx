@@ -10,7 +10,7 @@ const _LeftMenu = () => {
     const classes = useStyles()
 
     return (
-        <Grid item xs={2}>
+        <Grid item xs={2} elevation={3} style={{ position: "sticky"}}>
             <Box className={classes.leftMenuStyle}>
                 <div>
                     <Badge badgeContent={1} color="error">

@@ -34,9 +34,9 @@ const App = () => {
                         <_Navigation/>
                         <_LeftMenu/>
                         <Routes>
-                            <Route path="/login" element={<Login/>}/>
+                            <Route path="/" element={<Login/>}/>
                             <Route path="/main" element={<MainPage/>}/>
-                            <Route path="/:id" element={<IssuePage/>}/>
+                            <Route path="/issues" element={<IssuePage/>}/>
                             <Route path="/users" element={<UserModerationPage/>}/>
                             <Route path="/user" element={<UserActionPage/>}/>
                             <Route path="/users/add" element={<AddUserPage/>}/>

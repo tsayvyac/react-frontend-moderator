@@ -1,11 +1,19 @@
-import {Card, CardContent, CardHeader, CardMedia, Grid, Typography} from "@material-ui/core";
-import {Button} from "@mui/material";
-import React from "react";
+import { Card, CardContent, CardHeader, CardMedia, Grid, Typography } from "@material-ui/core";
+import { Button } from "@mui/material";
+import React, { useEffect } from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
 import bananaImage from "../img/banana.jpg"
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { API_BASE } from "../apis/apis";
+import axios from "axios";
 
 const IssuePage = () => {
 
@@ -18,40 +26,79 @@ const IssuePage = () => {
 Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sagittis velit mauris vel metus. Fusce dui leo, imperdiet in, aliquam sit amet, feugiat eu, orci. Nulla est. Praesent vitae arcu tempor neque lacinia pretium. Suspendisse sagittis ultrices augue. Aliquam erat volutpat. Nulla pulvinar eleifend sem. Integer rutrum, orci vestibulum ullamcorper ultricies, lacus quam ultricies odio, vitae placerat pede sem sit amet enim. Ut tempus purus at lorem. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.";
     const [approveOpened, setApproveOpened] = React.useState(false);
     const [rejectOpened, setRejectOpened] = React.useState(false);
-    const [anchor, setAnchor] = React.useState(null);
+    const [dialogOpen, setDialogOpen] = React.useState(false);
     const classes = useStyles();
-    console.log(classes.topHeader)
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const [issue, setIssue] = React.useState({
+        author: "Author",
+        address: "address",
+        category: "Category",
+        publishedDate: "Date",
+        name: "",
+        description: ""
+    });
+    const url = API_BASE + '/id=' + id;
+    const getIssue = () => {
+        console.log("got here")
+        axios.get(url)
+            .then(responce => {
+                setIssue(
+                    {
+                        author: "Author",
+                        address: "address",
+                        category: "Category",
+                        publishedDate: "Date",
+                        name: "",
+                        description: "",
+                        url: ""
+                    }
+                );
+                console.log('set issue');
+            }
+            )
+            .catch(e => console.log("Can not fetch"))
+    }
+
+    useEffect(() => {
+        console.log("got here")
+        getIssue();
+    }, [url])
+
 
     const approve = () => { setApproveOpened(true); }
-    const reject = () => { setRejectOpened(true); }
+    const reject = () => {
+        setDialogOpen(false);
+        setRejectOpened(true);
+    }
     return (
         <Grid item xs={9} >
             <Snackbar
-                sx = {{width:'80%'}}
+                sx={{ width: '80%' }}
                 open={approveOpened}
                 autoHideDuration={6000} // Adjust the duration as needed
                 onClose={() => setApproveOpened(false)}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
-                <Alert onClose={() => setApproveOpened(false)} variant = "filled" severity="success" sx = {{width:'80%'}}>
+                <Alert onClose={() => setApproveOpened(false)} variant="filled" severity="success" sx={{ width: '80%' }}>
                     Issue approved
                 </Alert>
             </Snackbar>
             <Snackbar
-                sx = {{width:'80%'}}
+                sx={{ width: '80%' }}
                 open={rejectOpened}
                 autoHideDuration={6000} // Adjust the duration as needed
                 onClose={() => setRejectOpened(false)}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
-                <Alert onClose={() => setRejectOpened(false)} variant = "filled" severity="error" sx = {{width:'80%'}}>
+                <Alert onClose={() => setRejectOpened(false)} variant="filled" severity="error" sx={{ width: '80%' }}>
                     Issue rejected
                 </Alert>
             </Snackbar>
             <Grid container spacing={1} className={classes.topHeader}>
 
                 <Typography variant={'h4'}>
-                    Issue 000-000-000
+                    {issue.name}
                 </Typography>
 
             </Grid>
@@ -86,8 +133,32 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                 </Grid>
                 <Grid item xs={10} spacing={1} className={classes.buttonGrid}>
                     <Grid container className={classes.buttonSmallContainer}>
-                        <Button variant="contained" onClick={reject}>Reject</Button>
+                        <Button variant="contained" onClick={() => setDialogOpen(true)}>Reject</Button>
                         <Button variant="contained" onClick={approve}>Approve</Button>
+                        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}
+                            fullWidth={true}
+                        >
+                            <DialogTitle>Reject</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText>
+                                    Provide the reason why this issue is rejected
+                                </DialogContentText>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="issuecomment"
+                                    label="Issue comment"
+                                    fullWidth
+                                    variant="standard"
+                                    multiline
+                                    rows='3'
+                                />
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+                                <Button onClick={reject}>Reject issue</Button>
+                            </DialogActions>
+                        </Dialog>
                     </Grid>
                 </Grid>
             </Grid>
