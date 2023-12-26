@@ -11,26 +11,35 @@ import {
     TextField
 } from "@mui/material";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import useStyles from "../styles/styles";
 import {Link} from "react-router-dom";
 import axios from 'axios';
 import {API_BASE} from "../apis/apis";
 import Cookies from "js-cookie";
+import * as apis from "../apis/apis";
+import AuthContext from "../apis/context/AuthProvider";
 
 
 
 //API key: AIzaSyC6-kPQq0Hv7gacfZ_1NenpyS_a1ahV910
 // Map id: 8682b82c7c8bf444
+// npx json-server --watch apis/data/db.json --port 8000
+//{
+//     "email": "moderator@better-city.mikita.dev",
+//     "password": "12345678",
+//     "returnSecureToken": true
+// }
 const MainPage = () => {
 
     const classes = useStyles();
+    const { auth } = useContext(AuthContext)
 
     let search = window.location.search;
     const params = new URLSearchParams(search);
     if(!params.get('page')) {
-        params.set('page', '1')
-        window.history.pushState({page:params.toString()} , null, '?page=1')
+        params.set('page', '0')
+        window.history.pushState({page:params.toString()} , null, '?page=0')
     }
 
     // todo change impl depends on real api
@@ -45,30 +54,29 @@ const MainPage = () => {
 
     useEffect(() => {
         document.title = toModerate ? 'To moderate' : 'All'
-        axios.defaults.withCredentials = true;
         axios.get(buildURI(), {
             headers: {
-                'Authorization': `Bearer ${Cookies.get('token')}`
+                'Authorization': `Bearer ${auth.token}`
             }
         })
             .then(response => {
-                setIssues(response.data)
-                setTotalPages(Math.ceil(response.headers.get('X-Total-Count')/issuesLimitOnPage))
+                setIssues(response.data.issues)
+                setTotalPages(Math.ceil(response.data.totalPages/issuesLimitOnPage))
                 setIsLoading(false)
             })
             .catch(error => console.log(error))
     }, [issuesLimitOnPage, page, toModerate, sortState, searchState]);
 
     function buildURI() {
-        let uri = `${API_BASE}/issues?_limit=${issuesLimitOnPage}&_page=${page}`
+        let uri = `${API_BASE}/issues?size=${issuesLimitOnPage}&page=${page}`
         if(toModerate) {
-            uri += "&status=MODERATION"
+            uri += "&statuses=MODERATION"
         }
-        if(sortState === 'visited') {
-            uri += "&isVisited=false"
-        }
+        // if(sortState === 'visited') {
+        //     uri += "&isVisited=false"
+        // }
         if(sortState === 'latest') {
-            uri += "&_sort=creationDate&_order=asc"
+            uri += "&order-by=CREATION_DATE&order=DESC"
         }
         if(searchState.length !== 0) {
             uri += `&title_like=${searchState}`
@@ -88,7 +96,7 @@ const MainPage = () => {
 
     function setPageHandler(page) {
         let pg = parseInt(params.get('page'))
-        window.history.replaceState({page:pg.toString()}, null, '?page='+page)
+        window.history.replaceState({page:pg.toString()}, null, '?page='+page-1)
         setPage(page)
     }
 

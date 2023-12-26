@@ -11,6 +11,7 @@ import {initializeApp} from "firebase/app";
 import {getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword} from "firebase/auth";
 import AuthContext from "../apis/context/AuthProvider";
 import Cookies from 'js-cookie';
+import axios from "axios";
 
 function Copyright(props) {
   return (
@@ -70,23 +71,21 @@ export default function Login() {
       const data = new FormData(event.currentTarget);
         let email= data.get('email')
         let password = data.get('password')
-
-        if(validateFields(email, password)){
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
                     const token = user.accessToken
                     const expTime = user.stsTokenManager.expirationTime
-                    setAuth({email, token, expTime})
+                    setAuth({token, expTime})
                     setIsSuccess(true)
-                    // window.location = '/main';
-                    console.log(user)
+                    Cookies.set('token', token)
+                    Cookies.set('exp', expTime)
+                    window.location = '/main';
                 })
                 .catch((error) => {
                     setError(`${error.code} ${error.message}`)
                 });
         }
-    };
 
     useEffect(() => {
         //emailRef.current.focus()

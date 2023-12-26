@@ -1,8 +1,9 @@
 import Container from "@mui/material/Container";
 import {Grid, Typography} from "@material-ui/core";
 import CloseIcon from '@mui/icons-material/Close';
+import Cookies from 'js-cookie';
 
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {
     Box,
     Button,
@@ -19,18 +20,18 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import {API_BASE} from "../apis/apis";
 import axios from "axios";
 import {validateEmail} from "./Login";
+import AuthContext from "../apis/context/AuthProvider";
 
 const AddUserPage = () => {
 
-    
-
+    const { auth } = useContext(AuthContext)
     const [msg, setMsg] = useState("User was created")
     const [open, setOpen] = useState(false)
     const [error, setError] = useState('NONE-ERROR')
+    let submitted = false;
 
-
-    function validateFields (email, bio, pass, name) {
-        if(!email || !bio || !pass || !name) setError('Fill all fields')
+    function validateFields (email,pass, name) {
+        if(!email || !pass || !name) setError('Fill all fields')
         else if(!validateEmail(email)) setError('Email format is invalid')
         else if(pass.length < 8) setError('Password must be at least 8 characters long')
         else {
@@ -40,23 +41,31 @@ const AddUserPage = () => {
         return false
     }
     function handleSubmit(e) {
-        e.preventDefault()
-        let formData = new FormData(e.currentTarget);
-        let user = {
-            name: formData.get('firstName'),
-            password: formData.get('password'),
-            email: formData.get('email'),
-            description: formData.get('bio')
-        }
-        if(validateFields(user.email, user.description, user.password, user.name)){
-            let role = formData.get('radio-buttons-group')
-            axios.post(buildURI(role), JSON.stringify(user))
-                .then(res => {
+        if(!submitted){
+            submitted = true;
+            e.preventDefault()
+            let formData = new FormData(e.currentTarget);
+            let user = {
+                name: formData.get('firstName'),
+                password: formData.get('password'),
+                email: formData.get('email'),
+            }
+            if(validateFields(user.email, user.password, user.name)){
+                let role = formData.get('radio-buttons-group')
+                axios.post(buildURI(role), JSON.stringify(user), {
+                    headers: {
+                        'Content-type': 'application/json',
+                        Authorization: `Bearer ${auth.token}`
+                    }
+                })
+                    .then(res => {
+                        setOpen(true)
+                    }).catch(error => {
+                    setMsg(error)
                     setOpen(true)
-                }).catch(error => {
-                setMsg(error)
-                setOpen(true)
-            })
+                })
+            }
+            submitted = false;
         }
     }
 
@@ -194,7 +203,7 @@ const AddUserPage = () => {
                             </Button>
                             <Button
                                 type="reset"
-                                onClick={() => window.location = '/main'}
+                                onClick={() => window.location = '/users'}
                                 fullWidth
                                 variant="contained"
                                 sx={{ mt: 2, mb: 1 }}
