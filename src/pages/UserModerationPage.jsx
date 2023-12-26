@@ -1,5 +1,5 @@
 import {Card, Grid, Typography} from "@material-ui/core";
-import {Box, Button, FormControl, InputLabel, MenuItem, Select, TextField} from "@mui/material";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, CircularProgress, TextField} from "@mui/material";
 import React from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
@@ -7,23 +7,26 @@ import {DataGrid} from '@mui/x-data-grid';
 import Avatar from '@mui/material/Avatar';
 import { API_BASE } from "../apis/apis";
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useContext, useState } from "react";
 import Cookies from "js-cookie";
 import Link from "@mui/material/Link";
+import AuthContext from "../apis/context/AuthProvider";
 
 
 const UserModerationPage = () => {
-    
+    const { auth } = useContext(AuthContext)
+
     let search = window.location.search;
     const params = new URLSearchParams(search);
     if(!params.get('page')) {
         params.set('page', '0')
         window.history.pushState({page:params.toString()} , null, '?page=0')
     }
-    const [status, setStatus] = React.useState('');
+    const [status, setStatus] = React.useState('all');
     const [role, setRole] = React.useState('residents');
     const [users, setUsers] = React.useState([]);
     const [searchState, setSearchState] = React.useState("");
+    const [isLoading, setIsLoading] = useState(true);
 
 
     const [paginationModel, setPaginationModel] = React.useState({
@@ -37,7 +40,7 @@ const UserModerationPage = () => {
 
     const applyStatusChange = (e) => {
         setStatus(e.target.value);
-        console.log("Stting staus")
+        console.log("itting staus")
     }
 
     function searchHandler(title) {
@@ -47,7 +50,7 @@ const UserModerationPage = () => {
     const classes = useStyles();
 
     function buildURI() {
-        let uri = `${API_BASE}/${role}?_limit=${paginationModel.pageSize}&_page=${(parseInt(paginationModel.page)+1)}`
+        let uri = `${API_BASE}/${role}?size=${paginationModel.pageSize}&page=${(parseInt(paginationModel.page)+1)}`
         if (status !== '' & status !== 'all')
         {
             uri += `&status=${status}`
@@ -65,25 +68,28 @@ const UserModerationPage = () => {
         const r = {
             name: user.firstName + ' ' + user.lastName,
             avatar: 'https://images.pexels.com/photos/13037579/pexels-photo-13037579.jpeg',
-            id: user.id
+            id: user.uid
         }
         user.name = r;
+        user.id = user.uid;
         return user;
     })
 
     useEffect(() => {
+        setIsLoading(true)
         let pg = parseInt(params.get('page'));
         window.history.replaceState({page:pg.toString()}, null, '?page='+(parseInt(paginationModel.page)+1))
-        axios.defaults.withCredentials = true;
         axios.get(buildURI(), {
             headers: {
-                'Authorization': `Bearer ${Cookies.get('token')}`
+                'Authorization': `Bearer ${auth.token}`
             }
         })
             .then(response => {
-                setUsers(response.data)
+                console.log(response.data)
+                setUsers(response.data[role])
             })
             .catch(error => console.log(error))
+        setIsLoading(false);
     }, [role, status, paginationModel, searchState]);
 
     const columns = [
@@ -114,9 +120,13 @@ const UserModerationPage = () => {
                 const status = params.value;
                 
                 let state = 'default';
-                if(status === "blocked")                
+                if(status === "BLOCKED")                
                 {
                     state = "warning";
+                }
+                if( status === "DELETED")
+                {
+                    state = "error"
                 }
                 
                 return (
@@ -134,6 +144,16 @@ const UserModerationPage = () => {
         },
     ];
 
+
+    if(isLoading) {
+        return (
+            <Grid  item xs={10}>
+                <Box sx={{display: 'flex', justifyContent: 'center', height:"80%", alignItems:"center"}}>
+                    <CircularProgress size={110}/>
+                </Box>
+            </Grid>
+        );
+    }
 
 
     return (<Grid item xs={9}>
@@ -160,6 +180,7 @@ const UserModerationPage = () => {
                                 >
                                     <MenuItem value={'residents'}>Resident</MenuItem>
                                     <MenuItem value={'services'}>Public service</MenuItem>
+                                    <MenuItem value={'analysts'}>Analyst</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
