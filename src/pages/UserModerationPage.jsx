@@ -67,7 +67,7 @@ const UserModerationPage = () => {
     let rows = users.map(user => {
         const r = {
             name: user.firstName + ' ' + user.lastName,
-            avatar: 'https://images.pexels.com/photos/13037579/pexels-photo-13037579.jpeg',
+            avatar: user.photo,
             id: user.uid
         }
         user.name = r;
@@ -85,7 +85,7 @@ const UserModerationPage = () => {
             }
         })
             .then(response => {
-                console.log(response.data)
+                console.log(response.data[role])
                 setUsers(response.data[role])
             })
             .catch(error => console.log(error))

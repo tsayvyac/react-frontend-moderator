@@ -1,10 +1,12 @@
 import {Card, CardActions, CardContent, Grid, Typography} from "@material-ui/core";
 import {Alert, Box, Button, Snackbar} from "@mui/material";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useContext} from "react";
 import useStyles from "../styles/styles";
 import Avatar from "@mui/material/Avatar";
 import axios from "axios";
 import {API_BASE} from "../apis/apis";
+import AuthContext from "../apis/context/AuthProvider";
+
 
 const UserActionPage = () => {
 
@@ -16,13 +18,19 @@ const UserActionPage = () => {
     const [role, setRole] = useState(params.get('role'))
     const [id, setId] = useState(params.get('id'))
     const classes = useStyles();
+    const { auth } = useContext(AuthContext)
 
 
 
     const getUserInfo = () => {
-        axios.get(`${API_BASE}/${role}?id=${id}`).then(res => {
+        axios.get(`${API_BASE}/${role}/${id}`,
+        {
+            headers: {
+                'Authorization': `Bearer ${auth.token}`
+            }
+        }).then(res => {
             console.log(res.data)
-            setUser({status:res.data[0].status, name:res.data[0].name, description:res.data[0].description, photo:res.data[0].photo})
+            setUser({status:res.data['status'], name:res.data['firstName'] + ' ' + res.data['lastName'], description:"", photo:res.data['photo']})
         }).catch(error => console.log(error))
     }
 
