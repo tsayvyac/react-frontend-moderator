@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardMedia, Grid, Typography } from "@material-ui/core";
 import { Button } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
 import bananaImage from "../img/banana.jpg"
@@ -14,6 +14,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { API_BASE } from "../apis/apis";
 import axios from "axios";
+import AuthContext from "../apis/context/AuthProvider";
+
 
 const IssuePage = () => {
 
@@ -28,6 +30,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
     const [rejectOpened, setRejectOpened] = React.useState(false);
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const classes = useStyles();
+    const { auth } = useContext(AuthContext)
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const [issue, setIssue] = React.useState({
@@ -38,31 +41,43 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
         name: "",
         description: ""
     });
-    const url = API_BASE + '/id=' + id;
+    const url = API_BASE + '/issues/' + id;
     const getIssue = () => {
         console.log("got here")
-        axios.get(url)
-            .then(responce => {
-                setIssue(
-                    {
-                        author: "Author",
-                        address: "address",
-                        category: "Category",
-                        publishedDate: "Date",
-                        name: "",
-                        description: "",
-                        url: ""
-                    }
-                );
-                console.log('set issue');
-            }
-            )
-            .catch(e => console.log("Can not fetch"))
+       
     }
 
     useEffect(() => {
         console.log("got here")
-        getIssue();
+        axios.get(url, {
+            headers: {
+            'Authorization': `Bearer ${auth.token}`
+        }})
+            .then(responce => {
+                console.log(responce.data.categoryId)
+                let issueTemp = 
+                {
+                    author: "Author",
+                    address: "Address",
+                    category: responce.data.categoryId,
+                    publishedDate: responce.data.creationDate,
+                    name: responce.data.title,
+                    description: responce.data.description,
+                    url: responce.data.photo
+                }
+                axios.get(API_BASE+'/residents/'+responce.data['authorUid'], {
+                    headers: {
+                    'Authorization': `Bearer ${auth.token}`
+                }}).
+                then(r => {
+                    const name = r.data.firstName + ' ' + r.data.lastName;
+                    issueTemp.author = name;
+                    setIssue(issueTemp);
+                })
+                console.log(issueTemp)                
+            }
+            )
+            .catch(e => console.log("Can not fetch"));
     }, [url])
 
 
@@ -115,7 +130,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
 
                         <CardHeader title="Description" />
                         <CardContent>
-                            <Typography variant="body2">{issueDescription}</Typography>
+                            <Typography variant="body2">{issue.description}</Typography>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -123,10 +138,10 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                     <Card style={{ minWidth: 430, maxWidth: 500 }}  >
                         <CardHeader title="Information" />
                         <CardContent>
-                            <Typography variant="body2">Author: {author}</Typography>
-                            <Typography variant="body2">Address: {address}</Typography>
-                            <Typography variant="body2">Category: {category}</Typography>
-                            <Typography variant="body2">Published: {publishedDate}</Typography>
+                            <Typography variant="body2">Author: {issue.author}</Typography>
+                            <Typography variant="body2">Address: {issue.address}</Typography>
+                            <Typography variant="body2">Category: {issue.category}</Typography>
+                            <Typography variant="body2">Created: {issue.publishedDate}</Typography>
                             <Chip label="Minor damage" sx={{ mt: 2 }} />
                         </CardContent>
                     </Card>
