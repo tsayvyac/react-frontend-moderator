@@ -13,62 +13,65 @@ import {
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 import React, {useContext, useEffect, useState} from "react";
 import useStyles from "../styles/styles";
-import {Link} from "react-router-dom";
-import axios from 'axios';
-import {API_BASE} from "../apis/apis";
-import Cookies from "js-cookie";
-import * as apis from "../apis/apis";
+import {Link, useNavigate} from "react-router-dom";
+import {API_BASE, getAxiosInstance} from "../apis/apis";
 import AuthContext from "../apis/context/AuthProvider";
-
+import { useLocation } from 'react-router-dom';
 
 
 //API key: AIzaSyC6-kPQq0Hv7gacfZ_1NenpyS_a1ahV910
 // Map id: 8682b82c7c8bf444
-// npx json-server --watch apis/data/db.json --port 8000
-//{
 //     "email": "moderator@better-city.mikita.dev",
 //     "password": "12345678",
 //     "returnSecureToken": true
 // }
 const MainPage = () => {
-
+    const location = useLocation();
+    const nav = useNavigate()
+    const params = new URLSearchParams(location.search);
     const classes = useStyles();
-    const { auth } = useContext(AuthContext)
-
-    let search = window.location.search;
-    const params = new URLSearchParams(search);
-    if(!params.get('page')) {
-        params.set('page', '0')
-        window.history.pushState({page:params.toString()} , null, '?page=0')
-    }
-
-    // todo change impl depends on real api
-    let issuesLimitOnPage = 5;
+    const issuesLimitOnPage = 5;
     const [isLoading, setIsLoading] = useState(true)
     const [sortState, setSortState] = useState("none")
     const [toModerate, setToModerate] = useState(false);
-    const [page, setPage] = useState(parseInt(params.get('page')))
+    const [page, setPage] = useState(params.get('page') || 1)
     const [searchState, setSearchState] = useState("")
     const [issues, setIssues] = useState([]);
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [changes, setChanges] = useState(true)
+    const { getToken } = useContext(AuthContext)
+
+
+    const checkParams = ()=> {
+        if (!params.has('page')) {
+            nav(`?page=1`);
+        } else {
+            let fromParam = params.get('page');
+            fromParam = parseInt(fromParam) <= 0 ? '1' : fromParam;
+            fromParam = parseInt(fromParam) >= totalPages ? totalPages : fromParam;
+            setPageHandler(fromParam)
+        }
+    }
+
+    useEffect( () => {
+        if(changes){
+            setIsLoading(true)
+            getIssues().then(res =>
+            {
+                document.title = toModerate ? 'To moderate' : 'All'
+                setChanges(false)
+            })
+        }
+    }, [changes]);
+
 
     useEffect(() => {
-        document.title = toModerate ? 'To moderate' : 'All'
-        axios.get(buildURI(), {
-            headers: {
-                'Authorization': `Bearer ${auth.token}`
-            }
-        })
-            .then(response => {
-                setIssues(response.data.issues)
-                setTotalPages(Math.ceil(response.data.totalPages/issuesLimitOnPage))
-                setIsLoading(false)
-            })
-            .catch(error => console.log(error))
-    }, [issuesLimitOnPage, page, toModerate, sortState, searchState]);
+        checkParams()
+    }, [nav, location.search]);
 
     function buildURI() {
-        let uri = `${API_BASE}/issues?size=${issuesLimitOnPage}&page=${page}`
+        let number = page-1;
+        let uri = `${API_BASE}/admin/issues?size=${issuesLimitOnPage}&page=${number}`
         if(toModerate) {
             uri += "&statuses=MODERATION"
         }
@@ -84,10 +87,41 @@ const MainPage = () => {
         return uri;
     }
 
+    const getAuthor =  (uid) => {
+        return getAxiosInstance(getToken()).get(`${API_BASE}/admin/residents/${uid}`)
+    }
+
+    const getCategory = (id) => {
+        return getAxiosInstance(getToken()).get(`${API_BASE}/categories/${id}`)
+    }
+
+    const getIssues = async () => {
+        const response = await getAxiosInstance(getToken()).get(buildURI())
+        setTotalPages(response.data.totalPages);
+        await Promise.all(response.data.issues.map(async issue => {
+            const authorResponse = await getAuthor(issue.authorUid);
+            const issueAuthor = `${authorResponse.data.firstName} ${authorResponse.data.lastName}`;
+            const categoryResponse = await getCategory(issue.categoryId)
+            const issueCategory = categoryResponse.data.name
+            const issueDate = new Date(issue.creationDate)
+            const dateString = issueDate.toISOString().split('T')[0];
+            return{
+                ...issue,
+                author:issueAuthor,
+                category:issueCategory,
+                creationDate:dateString
+            }
+        }))
+            .then(succ => {
+            setIssues(succ)
+            setIsLoading(false)
+        });
+    }
+
+
     function setIsVisited(issueId) {
         //todo setIsVisited via API
     }
-
 
     function setToModerateHandler(toMod) {
         setToModerate(toMod)
@@ -95,17 +129,22 @@ const MainPage = () => {
     }
 
     function setPageHandler(page) {
-        let pg = parseInt(params.get('page'))
-        window.history.replaceState({page:pg.toString()}, null, '?page='+page-1)
-        setPage(page)
+        if(page !== undefined || !isNaN(page)){
+            let newPg = parseInt(page)
+            setPage(newPg)
+            setChanges(true)
+            nav(`?page=${newPg}`)
+        }
     }
 
     function searchHandler(title) {
         setSearchState(title)
+        setChanges(true)
     }
 
    function filterHandler(val) {
        setSortState(val)
+       setChanges(true)
    }
 
     if(isLoading) {
@@ -117,10 +156,6 @@ const MainPage = () => {
             </Grid>
         );
     }
-
-
-
-
 
 
     return (
@@ -179,17 +214,16 @@ const MainPage = () => {
                                     </Grid>
                                 </Box>
                                 <Typography variant="body2">
-                                    TEST street
                                     <br/>
                                 </Typography>
                                 <Box display={'flex'}>
                                     <Grid item xs={6} md={12}>
                                         <Typography sx={{fontSize: 14}} color="text.secondary" variant={'subtitle2'}
                                                     gutterBottom>
-                                            {`${issue.authorId} ${issue.creationDate}`}
+                                            {`${issue.author} ${issue.creationDate}`}
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={3} md={1}>
+                                    <Grid item xs={3} md={2}>
                                         <Typography align="center" sx={{fontSize: 14}} color="text.secondary"
                                                     variant={'subtitle2'} gutterBottom>
                                             {issue.category}
@@ -204,7 +238,7 @@ const MainPage = () => {
                     </Grid>
                 ))}
                 <Grid item xs={10}>
-                    <Pagination count={totalPages} page={page} onChange={(e) =>{ setPageHandler(parseInt(e.nativeEvent.target.innerText))}} className={classes.testAlignCenter}/>
+                    <Pagination count={totalPages} page={page} onChange={(e) =>{ setPageHandler(e.nativeEvent.target.innerText)}} className={classes.testAlignCenter}/>
                 </Grid>
             </Grid>
         </Grid>

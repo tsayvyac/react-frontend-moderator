@@ -1,7 +1,6 @@
 import Container from "@mui/material/Container";
 import {Grid, Typography} from "@material-ui/core";
 import CloseIcon from '@mui/icons-material/Close';
-import Cookies from 'js-cookie';
 
 import React, {useContext, useEffect, useState} from "react";
 import {
@@ -17,20 +16,27 @@ import {
     TextField
 } from "@mui/material";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import {API_BASE} from "../apis/apis";
-import axios from "axios";
-import {validateEmail} from "./Login";
+import {API_BASE, getAxiosInstance} from "../apis/apis";
 import AuthContext from "../apis/context/AuthProvider";
+import {useNavigate} from "react-router-dom";
 
 const AddUserPage = () => {
 
-    const { auth } = useContext(AuthContext)
+    const { getToken } = useContext(AuthContext)
     const [msg, setMsg] = useState("User was created")
     const [open, setOpen] = useState(false)
     const [error, setError] = useState('NONE-ERROR')
-    let submitted = false;
+    const nav = useNavigate()
+    const [isLoading, setIsLoading] = useState(false)
 
-    function validateFields (email,pass, name) {
+    const validateEmail = (email) => {
+        return String(email)
+            .toLowerCase()
+            .match(
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            );
+    };
+    function validateFields (email, bio, pass, name) {
         if(!email || !pass || !name) setError('Fill all fields')
         else if(!validateEmail(email)) setError('Email format is invalid')
         else if(pass.length < 8) setError('Password must be at least 8 characters long')
@@ -41,31 +47,25 @@ const AddUserPage = () => {
         return false
     }
     function handleSubmit(e) {
-        if(!submitted){
-            submitted = true;
-            e.preventDefault()
-            let formData = new FormData(e.currentTarget);
-            let user = {
-                name: formData.get('firstName'),
-                password: formData.get('password'),
-                email: formData.get('email'),
-            }
-            if(validateFields(user.email, user.password, user.name)){
-                let role = formData.get('radio-buttons-group')
-                axios.post(buildURI(role), JSON.stringify(user), {
-                    headers: {
-                        'Content-type': 'application/json',
-                        Authorization: `Bearer ${auth.token}`
-                    }
-                })
-                    .then(res => {
-                        setOpen(true)
-                    }).catch(error => {
-                    setMsg(error)
+        e.preventDefault()
+        setIsLoading(true)
+        let formData = new FormData(e.currentTarget);
+        let user = {
+            name: formData.get('firstName'),
+            password: formData.get('password'),
+            email: formData.get('email'),
+            description: formData.get('bio')
+        }
+        if(validateFields(user.email, user.description, user.password, user.name)){
+            let role = formData.get('radio-buttons-group')
+            getAxiosInstance(getToken()).post(buildURI(role), JSON.stringify(user))
+                .then(res => {
+                    setIsLoading(false)
                     setOpen(true)
-                })
-            }
-            submitted = false;
+                }).catch(error => {
+                setMsg(error)
+                setOpen(true)
+            })
         }
     }
 
@@ -74,7 +74,7 @@ const AddUserPage = () => {
     }
 
     function buildURI(role) {
-        return `${API_BASE}/${role}?`;
+        return `${API_BASE}/admin/${role}?`;
     }
 
 
@@ -197,13 +197,14 @@ const AddUserPage = () => {
                                 type="submit"
                                 fullWidth
                                 variant="contained"
+                                disabled={isLoading}
                                 sx={{ mt: 2, mb: 1 }}
                             >
                                 Submit
                             </Button>
                             <Button
                                 type="reset"
-                                onClick={() => window.location = '/users'}
+                                onClick={() => nav('/users')}
                                 fullWidth
                                 variant="contained"
                                 sx={{ mt: 2, mb: 1 }}

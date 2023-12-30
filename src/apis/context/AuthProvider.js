@@ -1,43 +1,53 @@
-import {createContext, useContext, useState} from "react";
-import Cookies from "js-cookie";
-
-
-
+import {createContext, useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useCookies} from 'react-cookie';
 
 const AuthContext = createContext({});
 
-
 export const AuthProvider = ({ children }) => {
-    const [auth, setAuth] = useState(null)
-    const CheckAuth = () => {
-        let token = Cookies.get('token')
-        let exp = Cookies.get('exp')
-        if(window.location.pathname === '/') {
+    const [cookies, setCookie, removeCookie] = useCookies(['token', 'exp']);
+    const nav = useNavigate()
+
+    const checkAuth = () => {
+        if(window.location.pathname === '/login') {
             return
         }
 
-        if (token !== undefined && exp !== undefined) {
-            exp = JSON.parse(exp)
-            if(exp  < new Date().getTime()){
-                Cookies.set('token', undefined)
-                Cookies.set('exp', undefined)
-                window.location = '/'
-            }
-            else {
-                if(auth === null){
-                    setAuth({token, exp})
-                }
+        const { token, exp } = cookies;
+        if (token && exp) {
+            const expirationTime = JSON.parse(exp);
+            if (expirationTime < new Date().getTime()) {
+                removeCookie('token', { path: '/' });
+                removeCookie('exp', { path: '/' });
+                nav('/login');
             }
         }
-
+        else {
+            nav("/login")
+        }
     }
-    CheckAuth();
+
+    const setTokenAndCookie = (exp, newToken) => {
+        setCookie('exp', exp, { path: '/' });
+        setCookie('token', newToken, { path: '/' });
+    };
+
+    const getToken = () => {
+        return cookies.token
+    }
+
+    useEffect(() => {
+        checkAuth()
+    }, []);
+
     return (
-        <AuthContext.Provider value={{auth, setAuth}}>
+        <AuthContext.Provider value={{getToken, setTokenAndCookie}}>
             {children}
         </AuthContext.Provider>
     )
+
 }
+
 
 
 

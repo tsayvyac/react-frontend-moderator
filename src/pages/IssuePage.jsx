@@ -30,7 +30,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
     const [rejectOpened, setRejectOpened] = React.useState(false);
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const classes = useStyles();
-    const { auth } = useContext(AuthContext)
+    const { getToken } = useContext(AuthContext)
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const [issue, setIssue] = React.useState({
@@ -51,7 +51,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
         console.log("got here")
         axios.get(url, {
             headers: {
-            'Authorization': `Bearer ${auth.token}`
+            'Authorization': `Bearer ${getToken()}`
         }})
             .then(responce => {
                 console.log(responce.data.categoryId)
@@ -67,7 +67,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                 }
                 axios.get(API_BASE+'/residents/'+responce.data['authorUid'], {
                     headers: {
-                    'Authorization': `Bearer ${auth.token}`
+                    'Authorization': `Bearer ${getToken()}`
                 }}).
                 then(r => {
                     const name = r.data.firstName + ' ' + r.data.lastName;

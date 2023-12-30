@@ -1,66 +1,103 @@
 import {Card, CardActions, CardContent, Grid, Typography} from "@material-ui/core";
-import {Alert, Box, Button, Snackbar} from "@mui/material";
-import React, {useEffect, useState, useContext} from "react";
+import {Alert, Box, Button, CircularProgress, Snackbar} from "@mui/material";
+import React, {useContext, useEffect, useState} from "react";
 import useStyles from "../styles/styles";
 import Avatar from "@mui/material/Avatar";
-import axios from "axios";
-import {API_BASE} from "../apis/apis";
+import {API_BASE, getAxiosInstance} from "../apis/apis";
 import AuthContext from "../apis/context/AuthProvider";
+import {useLocation} from "react-router-dom";
 
-
+// "udpUdj2B6sVbS8vKEb5Kwnq0ay83"
+//"ugtH9D6UgMVzJcw4zlYvWnvn2fp2"
 const UserActionPage = () => {
 
-    const params = new URLSearchParams(window.location.search);
 
-    const [flag, setFlag] = useState(false)
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const { getToken } = useContext(AuthContext)
     const [open, setOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true)
     const [user, setUser] = useState({status:'', name:'', description:'', photo:''})
     const [role, setRole] = useState(params.get('role'))
-    const [id, setId] = useState(params.get('id'))
+    const [id, setId] = useState(params.get("uid"))
+    const [updateInfo, setUpdateInfo] = useState(true)
     const classes = useStyles();
-    const { auth } = useContext(AuthContext)
 
 
 
-    const getUserInfo = () => {
-        axios.get(`${API_BASE}/${role}/${id}`,
-        {
-            headers: {
-                'Authorization': `Bearer ${auth.token}`
-            }
-        }).then(res => {
-            console.log(res.data)
-            setUser({status:res.data['status'], name:res.data['firstName'] + ' ' + res.data['lastName'], description:"", photo:res.data['photo']})
-        }).catch(error => console.log(error))
+    const getUserInfo = async () => {
+        await getAxiosInstance(getToken()).get(`${API_BASE}/admin/${role}/${id}`)
+            .then(res => {
+                return res
+            })
+            .then(async procRes => {
+                const config = { responseType: 'blob' };
+                await getAxiosInstance(getToken())
+                    .get(`${procRes.data.photo}?alt=media`, config)
+                    .then( blobFile => {
+                        setUser({
+                            status: procRes.data.status,
+                            name: procRes.data.name,
+                            description: procRes.data.description,
+                            photo:URL.createObjectURL(blobFile.data)
+                        })
+                        setIsLoading(false)
+                    })
+            })
+            .catch(error => console.log(error))
     }
 
     const handleClickOpen = () => {
-        axios.put(`${API_BASE}/${role}/${id}`, {
-            status:flag ? "ACTIVE" : "BLOCKED", name:user.name, description:user.description, photo:user.photo}).then(res => {  setFlag(!flag)})
-        setOpen(true);
-        setFlag(!flag)
+        getAxiosInstance(getToken()).patch(`${API_BASE}/admin/${role}/${id}`
+        ,{status:isBanned() ? "ACTIVE" : "BANNED"
+            })
+            .then(res => {
+                setOpen(true);
+                getUserInfo()
+                setUpdateInfo(true)
+            })
     };
 
     const handleClose = () => {
         setOpen(false);
     };
 
+    const isBanned = () => {
+        return user.status.localeCompare("BANNED") === 0;
+    }
+
     useEffect(() => {
-        getUserInfo()
-    },[flag]);
+        if(updateInfo){
+            getUserInfo()
+            setUpdateInfo(false)
+        }
+    },[user, updateInfo]);
+
+    if(isLoading) {
+        return (
+            <Grid  item xs={10}>
+                <Box sx={{display: 'flex', justifyContent: 'center', height:"80%", alignItems:"center"}}>
+                    <CircularProgress size={110}/>
+                </Box>
+            </Grid>
+        );
+    }
+
+
 
     return (
+
         <React.Fragment>
             <Grid item xs={8}>
                 <Card className={classes.userActionCardStyle}>
                     <CardContent>
                         <Grid container irection="column" spacing={2}>
+
                             <Grid container spacing={2}>
                                 <Grid item xs={2}>
                                     <Box className={classes.mainBoxInCard}>
-                                        <Avatar alt="Remy Sharp" src="../img/banana.jpg"  sx={{ width: 120, height: 120 }}/>
+                                        <Avatar alt="Remy Sharp" src={user.photo} sx={{ width: 120, height: 120 }}/>
                                     </Box>
-
                                 </Grid>
                                 <Grid  xs={6} item>
                                     <Box>
@@ -75,7 +112,7 @@ const UserActionPage = () => {
 
                         <Grid xs={4} item>
                             <CardActions>
-                                    <Button size="small" sx={{marginTop:10}} onClick={() => handleClickOpen()}>{flag ? "Unblock" : "Block"}</Button>
+                                    <Button size="small" sx={{marginTop:10}} onClick={handleClickOpen}>{isBanned() ? "Unblock" : "Block"}</Button>
                             </CardActions>
                         </Grid>
 
@@ -88,7 +125,7 @@ const UserActionPage = () => {
                     }}>
 
                         <Alert onClose={handleClose} severity="info" sx={{ width: '100%' , backgroundColor:"lightblue"}}>
-                            User was {flag ? "blocked" : "unblocked"}
+                            User was {isBanned() ? "blocked" : "unblocked"}
                         </Alert>
                     </Snackbar>
         </React.Fragment>

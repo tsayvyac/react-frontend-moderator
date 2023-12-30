@@ -1,17 +1,15 @@
 import * as React from 'react';
-import {useContext, useEffect, useRef, useState} from 'react';
+import {useContext, useState} from 'react';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {initializeApp} from "firebase/app";
-import {getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword} from "firebase/auth";
+import {getAuth, signInWithEmailAndPassword} from "firebase/auth";
 import AuthContext from "../apis/context/AuthProvider";
-import Cookies from 'js-cookie';
-import axios from "axios";
 
 function Copyright(props) {
   return (
@@ -26,31 +24,12 @@ function Copyright(props) {
   );
 }
 
-export const validateEmail = (email) => {
-    return String(email)
-        .toLowerCase()
-        .match(
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        );
-};
-
 export default function Login() {
 
-    const { setAuth } = useContext(AuthContext)
+    const { setTokenAndCookie } = useContext(AuthContext)
+    const nav = useNavigate()
     const [error, setError] = useState("NONE-ERROR")
-    const [success, setIsSuccess] = useState(false)
-    const emailRef = useRef("")
-
-
-
-    const validateFields = (email, password) => {
-        setIsSuccess(false)
-        if(!email || !password) setError('Fill all fields')
-        else if(!validateEmail(email)) setError('Email format is invalid')
-        else {setError('NONE-ERROR')
-            return true}
-        return false
-    }
+    const [loading, setLoading] = useState(false)
 
     const firebaseConfig = {
         apiKey: "AIzaSyClK4fF0-fOrs_Acg8QMRT1YMw0r2sXSwk",
@@ -61,37 +40,31 @@ export default function Login() {
         messagingSenderId: "441926160180",
         appId: "1:441926160180:web:0351f11bf618f2d0bddf61"
     };
-
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
+    const fbAuth = getAuth(app);
 
     const handleSubmit = (event) => {
       event.preventDefault();
+      setLoading(true);
+      setError('NONE-ERROR')
       const data = new FormData(event.currentTarget);
         let email= data.get('email')
         let password = data.get('password')
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    const token = user.accessToken
-                    const expTime = user.stsTokenManager.expirationTime
-                    setAuth({token, expTime})
-                    setIsSuccess(true)
-                    Cookies.set('token', token)
-                    Cookies.set('exp', expTime)
-                    window.location = '/main';
+        signInWithEmailAndPassword(fbAuth, email, password)
+            .then(async (userCredential) => {
+                const user = userCredential.user;
+                const expTime = user.stsTokenManager.expirationTime
+                await user.getIdToken(true).then(token => {
+                    setTokenAndCookie(expTime, token)
+                    nav('/main')
                 })
-                .catch((error) => {
-                    setError(`${error.code} ${error.message}`)
-                });
-        }
+            })
+            .catch((error) => {
+                setError(`${error.code} ${error.message}`)
+            })
+            .finally(res => {setLoading(false)});
+    }
 
-    useEffect(() => {
-        //emailRef.current.focus()
-    }, [error, success]);
-
-  
     return (
         <Container maxWidth={false}
         sx={{
@@ -156,6 +129,7 @@ export default function Login() {
                         type="submit"
                         fullWidth
                         variant="contained"
+                        disabled={loading}
                         sx={{ mt: 3, mb: 2 }}
                     >
                         Sign In

@@ -8,13 +8,12 @@ import Avatar from '@mui/material/Avatar';
 import { API_BASE } from "../apis/apis";
 import axios from "axios";
 import { useEffect, useContext, useState } from "react";
-import Cookies from "js-cookie";
 import Link from "@mui/material/Link";
 import AuthContext from "../apis/context/AuthProvider";
 
 
 const UserModerationPage = () => {
-    const { auth } = useContext(AuthContext)
+    const { getToken } = useContext(AuthContext)
 
     let search = window.location.search;
     const params = new URLSearchParams(search);
@@ -46,6 +45,11 @@ const UserModerationPage = () => {
     function searchHandler(title) {
         setSearchState(title)
     }
+
+    const newUserHandler = () => {
+        window.location.replace('/#/users/add');
+    };
+
 
     const classes = useStyles();
 
@@ -81,7 +85,7 @@ const UserModerationPage = () => {
         window.history.replaceState({page:pg.toString()}, null, '?page='+(parseInt(paginationModel.page)+1))
         axios.get(buildURI(), {
             headers: {
-                'Authorization': `Bearer ${auth.token}`
+                'Authorization': `Bearer ${getToken()}`
             }
         })
             .then(response => {
@@ -120,7 +124,7 @@ const UserModerationPage = () => {
                 const status = params.value;
                 
                 let state = 'default';
-                if(status === "BLOCKED")                
+                if(status === "BLOCKED")
                 {
                     state = "warning";
                 }
@@ -128,7 +132,7 @@ const UserModerationPage = () => {
                 {
                     state = "error"
                 }
-                
+
                 return (
                     <Chip
                         label = {status}
@@ -202,7 +206,7 @@ const UserModerationPage = () => {
                     </FormControl>
                 </Grid>
                 <Grid >
-                    <Button variant='contained' href = 'users/add'>New user</Button>
+                    <Button variant='contained' onClick={newUserHandler}>New user</Button>
                 </Grid>
             </Grid>
 
