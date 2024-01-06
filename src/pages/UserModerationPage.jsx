@@ -5,11 +5,13 @@ import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
 import {DataGrid} from '@mui/x-data-grid';
 import Avatar from '@mui/material/Avatar';
-import { API_BASE } from "../apis/apis";
+import {API_BASE, getAxiosInstance} from "../apis/apis";
 import axios from "axios";
 import { useEffect, useContext, useState } from "react";
-import Link from "@mui/material/Link";
 import AuthContext from "../apis/context/AuthProvider";
+import {Link,useNavigate} from "react-router-dom";
+
+
 
 
 const UserModerationPage = () => {
@@ -17,15 +19,19 @@ const UserModerationPage = () => {
 
     let search = window.location.search;
     const params = new URLSearchParams(search);
+    const nav = useNavigate()
+
     if(!params.get('page')) {
         params.set('page', '0')
-        window.history.pushState({page:params.toString()} , null, '?page=0')
+        nav('?page=0')
+        console.log("Pushing state")
     }
     const [status, setStatus] = React.useState('all');
     const [role, setRole] = React.useState('residents');
     const [users, setUsers] = React.useState([]);
     const [searchState, setSearchState] = React.useState("");
     const [isLoading, setIsLoading] = useState(true);
+
 
 
     const [paginationModel, setPaginationModel] = React.useState({
@@ -54,7 +60,7 @@ const UserModerationPage = () => {
     const classes = useStyles();
 
     function buildURI() {
-        let uri = `${API_BASE}/${role}?size=${paginationModel.pageSize}&page=${(parseInt(paginationModel.page)+1)}`
+        let uri = `${API_BASE}/admin/${role}?size=${paginationModel.pageSize}&page=${(parseInt(paginationModel.page)+1)}`
         if (status !== '' & status !== 'all')
         {
             uri += `&status=${status}`
@@ -79,10 +85,10 @@ const UserModerationPage = () => {
         return user;
     })
 
-    useEffect(() => {
-        setIsLoading(true)
-        let pg = parseInt(params.get('page'));
-        window.history.replaceState({page:pg.toString()}, null, '?page='+(parseInt(paginationModel.page)+1))
+const getUsers = async () =>
+{
+    let pg = parseInt(params.get('page'));
+        nav('?page='+(parseInt(paginationModel.page)+1))
         axios.get(buildURI(), {
             headers: {
                 'Authorization': `Bearer ${getToken()}`
@@ -93,6 +99,11 @@ const UserModerationPage = () => {
                 setUsers(response.data[role])
             })
             .catch(error => console.log(error))
+}
+
+    useEffect(() => {
+        setIsLoading(true)
+        getUsers()
         setIsLoading(false);
     }, [role, status, paginationModel, searchState]);
 
@@ -100,7 +111,7 @@ const UserModerationPage = () => {
         {
             field: 'name', headerName: 'User',
             width: 300,
-            renderCell: (params) => <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name} /><Grid item style={{ margin: "10px" }}><Link href = {"user?role="+role+'&id='+params.value.id}>{params.value.name} </Link></Grid></Grid>
+            renderCell: (params) => <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name} /><Grid item style={{ margin: "10px" }}><Link to = {"/user?role="+role+'&uid='+params.value.id}>{params.value.name} </Link></Grid></Grid>
         },
         {
             field: 'email',

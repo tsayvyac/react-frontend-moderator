@@ -10,10 +10,10 @@ const _LeftMenu = () => {
     const nav = useNavigate();
     const classes = useStyles()
     const handleUsers = () => {
-        nav('/users');
+        nav('/users?page=1');
     };
     const handleIssues = () => {
-        nav('/main');
+        nav('/main?page=1');
     };
 
     return (

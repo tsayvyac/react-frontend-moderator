@@ -3,7 +3,6 @@ import { Button } from "@mui/material";
 import React, { useEffect, useContext } from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
-import bananaImage from "../img/banana.jpg"
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import TextField from '@mui/material/TextField';
@@ -12,9 +11,10 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { API_BASE } from "../apis/apis";
+import {API_BASE, getAxiosInstance} from "../apis/apis";
 import axios from "axios";
 import AuthContext from "../apis/context/AuthProvider";
+import { useLocation } from "react-router-dom";
 
 
 const IssuePage = () => {
@@ -29,26 +29,88 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
     const [approveOpened, setApproveOpened] = React.useState(false);
     const [rejectOpened, setRejectOpened] = React.useState(false);
     const [dialogOpen, setDialogOpen] = React.useState(false);
+    const [errorOpened, setErrorOpened] = React.useState(false);
+    const [rejectReason, setRejectReason] = React.useState("")
     const classes = useStyles();
     const { getToken } = useContext(AuthContext)
-    const params = new URLSearchParams(window.location.search);
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
     const id = params.get('id');
     const [issue, setIssue] = React.useState({
-        author: "Author",
-        address: "address",
-        category: "Category",
-        publishedDate: "Date",
-        name: "",
-        description: ""
+        author: "",
+        address: "",
+        category: "",
+        publishedDate: "",
+        name: "loading...",
+        description: "loading...",
+        photo:"",
+        status:"loading..."
     });
-    const url = API_BASE + '/issues/' + id;
+    console.log(params)
+    console.log(id);
+    const url = API_BASE + '/admin/issues/' + id;
     const getIssue = () => {
         console.log("got here")
        
     }
 
+    const getAuthor =  (uid) => {
+        return getAxiosInstance(getToken()).get(`${API_BASE}/admin/residents/${uid}`)
+    }
+
+    const getCategory = (id) => {
+        return getAxiosInstance(getToken()).get(`${API_BASE}/categories/${id}`)
+    }
+
+    const getPhoto = (localUrl) =>
+    {
+        return getAxiosInstance(getToken()).get(localUrl);
+    } 
+
+    const changeTextAreaContent = (e) =>
+    {
+        setRejectReason(e.target.value)
+    }
+
+    const rejectIssue = (id, comment) =>
+    {
+        return getAxiosInstance(getToken()).put(`${API_BASE}/admin/issues/${id}/decline`);
+
+    } 
+
+    const approveIssue = (id) =>
+    {
+        return getAxiosInstance(getToken()).put(`${API_BASE}/admin/issues/${id}/approve`);
+    } 
+
+    const getIssues = async () => 
+    {
+        const response = await getAxiosInstance(getToken()).get(url)
+        const authorResponce = await getAuthor(response.data.authorUid);
+        const categoryResp = await getCategory(response.data.categoryId);
+        const author = authorResponce.data.firstName + " " + authorResponce.data.lastName;
+        const category = categoryResp.data.name;
+        const photo = getPhoto(response.data.photo);
+        console.log(photo)
+        console.log(response)
+        setIssue(
+            {
+                author: author,
+                address: response.data.coordinates.latitude + ' ' + response.data.coordinates.longitude,
+                category: category,
+                publishedDate: response.data.creationDate,
+                name:response.data.title,
+                description:response.data.description,
+                photo:response.data.photo,
+                status:response.data.status
+            }
+        )
+        console.log(author)
+    }
+
     useEffect(() => {
         console.log("got here")
+/*
         axios.get(url, {
             headers: {
             'Authorization': `Bearer ${getToken()}`
@@ -77,15 +139,40 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                 console.log(issueTemp)                
             }
             )
-            .catch(e => console.log("Can not fetch"));
+            .catch(e => console.log("Can not fetch"));*/
+            getIssues()
     }, [url])
 
 
-    const approve = () => { setApproveOpened(true); }
-    const reject = () => {
-        setDialogOpen(false);
-        setRejectOpened(true);
+    
+    const approve = async () => { 
+        const response = await approveIssue(id);
+        console.log(response);
+        if (Math.floor(response.status/100) == 2)
+        {
+            setApproveOpened(true);
+        }
+        else
+        {
+            console.log(response.status)
+            setErrorOpened(true);
+        } 
     }
+    const reject = async () => {
+        console.log(rejectReason);
+        const response = await rejectIssue(id, rejectReason);
+        if(Math.floor(response.status/100) == 2)
+        {
+            setDialogOpen(false);
+            setRejectOpened(true);    
+        }
+        else
+        {
+            console.log(response.status)
+            setErrorOpened(true);
+        }
+    }
+
     return (
         <Grid item xs={9} >
             <Snackbar
@@ -101,12 +188,23 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
             </Snackbar>
             <Snackbar
                 sx={{ width: '80%' }}
+                open={approveOpened}
+                autoHideDuration={6000} // Adjust the duration as needed
+                onClose={() => setErrorOpened(false)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setErrorOpened(false)} variant="filled" severity="error" sx={{ width: '80%' }}>
+                    Action was not successfull
+                </Alert>
+            </Snackbar>
+            <Snackbar
+                sx={{ width: '80%' }}
                 open={rejectOpened}
                 autoHideDuration={6000} // Adjust the duration as needed
                 onClose={() => setRejectOpened(false)}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
-                <Alert onClose={() => setRejectOpened(false)} variant="filled" severity="error" sx={{ width: '80%' }}>
+                <Alert onClose={() => setRejectOpened(false)} variant="filled" severity="success" sx={{ width: '80%' }}>
                     Issue rejected
                 </Alert>
             </Snackbar>
@@ -124,7 +222,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                             component="img"
                             height='256px'
                             alt="Issue problem"
-                            src={bananaImage}
+                            src={issue.photo}
                             fit="contain"
                         />
 
@@ -142,7 +240,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                             <Typography variant="body2">Address: {issue.address}</Typography>
                             <Typography variant="body2">Category: {issue.category}</Typography>
                             <Typography variant="body2">Created: {issue.publishedDate}</Typography>
-                            <Chip label="Minor damage" sx={{ mt: 2 }} />
+                            <Chip label={issue.status} sx={{ mt: 2 }} />
                         </CardContent>
                     </Card>
                 </Grid>
@@ -167,6 +265,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                                     variant="standard"
                                     multiline
                                     rows='3'
+                                    onChange={changeTextAreaContent}
                                 />
                             </DialogContent>
                             <DialogActions>
