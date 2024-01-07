@@ -1,11 +1,10 @@
 {
   "files": {
-    "main.js": "/react-frontend-moderator/static/js/main.7eae5404.js",
-    "static/media/banana.jpg": "/react-frontend-moderator/static/media/banana.510610c8deafac68e26d.jpg",
+    "main.js": "/react-frontend-moderator/static/js/main.26fabf79.js",
     "index.html": "/react-frontend-moderator/index.html",
-    "main.7eae5404.js.map": "/react-frontend-moderator/static/js/main.7eae5404.js.map"
+    "main.26fabf79.js.map": "/react-frontend-moderator/static/js/main.26fabf79.js.map"
   },
   "entrypoints": [
-    "static/js/main.7eae5404.js"
+    "static/js/main.26fabf79.js"
   ]
 }
