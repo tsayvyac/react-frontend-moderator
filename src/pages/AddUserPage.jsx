@@ -1,22 +1,100 @@
 import Container from "@mui/material/Container";
-import {CssBaseline, Grid, Typography} from "@material-ui/core";
+import {Grid, Typography} from "@material-ui/core";
+import CloseIcon from '@mui/icons-material/Close';
 
-import React, {useEffect, useState} from "react";
-import useStyles from "../styles/styles";
-import {Box, Button, Divider, FormControl, FormLabel, Radio, RadioGroup, TextField} from "@mui/material";
-import Avatar from "@mui/material/Avatar";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import React, {useContext, useEffect, useState} from "react";
+import {
+    Box,
+    Button,
+    Divider,
+    FormControl,
+    FormLabel,
+    IconButton,
+    Radio,
+    RadioGroup,
+    Snackbar,
+    TextField
+} from "@mui/material";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import {Link} from "react-router-dom";
-import {Copyright} from "@material-ui/icons";
+import {API_BASE, getAxiosInstance} from "../apis/apis";
+import AuthContext from "../apis/context/AuthProvider";
+import {useNavigate} from "react-router-dom";
 
 const AddUserPage = () => {
 
+    const { getToken } = useContext(AuthContext)
+    const [msg, setMsg] = useState("User was created")
+    const [open, setOpen] = useState(false)
+    const [error, setError] = useState('NONE-ERROR')
+    const nav = useNavigate()
+    const [isLoading, setIsLoading] = useState(false)
 
-    function handleSubmit(e) {
-
+    const validateEmail = (email) => {
+        return String(email)
+            .toLowerCase()
+            .match(
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            );
+    };
+    function validateFields (email, bio, pass, name) {
+        if(!email || !pass || !name) setError('Fill all fields')
+        else if(!validateEmail(email)) setError('Email format is invalid')
+        else if(pass.length < 8) setError('Password must be at least 8 characters long')
+        else {
+            setError('NONE-ERROR')
+            return true
+        }
+        setIsLoading(false)
+        return false
     }
+    function handleSubmit(e) {
+        e.preventDefault()
+        setIsLoading(true)
+        let formData = new FormData(e.currentTarget);
+        let user = {
+            name: formData.get('firstName'),
+            password: formData.get('password'),
+            email: formData.get('email'),
+            description: formData.get('bio')
+        }
+        if(validateFields(user.email, user.description, user.password, user.name)){
+            let role = formData.get('radio-buttons-group')
+            getAxiosInstance(getToken()).post(buildURI(role), JSON.stringify(user))
+                .then(res => {
+                    setOpen(true)
+                    setIsLoading(false)
+                })
+                .catch(error => {
+                setMsg(error)
+                setOpen(true)
+            })
+        }
+    }
+
+    function handleClose(e) {
+        setOpen(false)
+    }
+
+    function buildURI(role) {
+        return `${API_BASE}/admin/${role}?`;
+    }
+
+
+    const action = (
+        <React.Fragment>
+            <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={handleClose}
+            >
+                <CloseIcon fontSize="small" />
+            </IconButton>
+        </React.Fragment>
+    );
+
+    useEffect(() => {
+    }, [msg]);
 
     return(
         <Grid item xs={10}>
@@ -24,8 +102,15 @@ const AddUserPage = () => {
                 <Typography variant={"h5"} sx={{textDecoration: 'underline'}} display="inline">Create new user</Typography>
                 <Divider />
             </Box>
+            <Snackbar
+                open={open}
+                autoHideDuration={6000}
+                onClose={handleClose}
+                message={msg}
+                action={action}
+            />
+
             <Container component="main" maxWidth={"xs"}>
-                <CssBaseline />
                 <Box
                     sx={{
                         marginTop: 8,
@@ -34,18 +119,20 @@ const AddUserPage = () => {
                         alignItems: 'center',
                     }}
                 >
-                    <Box sx={{width:"100%"}}>
-                        <Typography variant={"subtitle2"}>Avatar</Typography>
-                    </Box>
-                    <Box sx={{width:"100%", display:"flex", justifyContent:"start"}}>
-                        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                        </Avatar>
-                        <Button>
-                            Upload image
-                        </Button>
-                    </Box>
-
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                        <Box sx={{
+                            marginBottom: 2,
+                            display: error === 'NONE-ERROR' ? 'none' : 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent:'center',
+                            backgroundColor:'#EE4B2B',
+                            width:"100%",
+                            height:"35px",
+                            borderRadius:"5px",
+                        }}>
+                            <Typography sx={{fontSize:"13px", color:"white"}}>{error}</Typography>
+                        </Box>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
@@ -98,12 +185,12 @@ const AddUserPage = () => {
                                     <FormLabel id="demo-radio-buttons-group-label" sx={{fontWeight:"bolder"}}>Select user's type</FormLabel>
                                     <RadioGroup
                                         aria-labelledby="demo-radio-buttons-group-label"
-                                        defaultValue="pub_serv"
+                                        defaultValue="services"
                                         name="radio-buttons-group"
                                     >
-                                        <FormControlLabel value="pub_serv" control={<Radio />} label="Public service" />
+                                        <FormControlLabel value="services" control={<Radio />} label="Public service" />
                                         <Typography variant={'caption'}>Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum</Typography>
-                                        <FormControlLabel value="analyst" control={<Radio />} label="Analyst" />
+                                        <FormControlLabel value="analysts" control={<Radio />} label="Analyst" />
                                         <Typography variant={'caption'}>Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum</Typography>
                                     </RadioGroup>
                                 </FormControl>
@@ -112,12 +199,14 @@ const AddUserPage = () => {
                                 type="submit"
                                 fullWidth
                                 variant="contained"
+                                disabled={isLoading}
                                 sx={{ mt: 2, mb: 1 }}
                             >
                                 Submit
                             </Button>
                             <Button
-                                type="back"
+                                type="reset"
+                                onClick={() => nav('/users')}
                                 fullWidth
                                 variant="contained"
                                 sx={{ mt: 2, mb: 1 }}

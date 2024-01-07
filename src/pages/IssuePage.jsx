@@ -1,9 +1,8 @@
 import { Card, CardContent, CardHeader, CardMedia, Grid, Typography } from "@material-ui/core";
 import { Button } from "@mui/material";
-import React from "react";
+import React, { useEffect, useContext } from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
-import bananaImage from "../img/banana.jpg"
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import TextField from '@mui/material/TextField';
@@ -12,11 +11,15 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import {API_BASE, getAddress, getAxiosInstance} from "../apis/apis";
+import axios from "axios";
+import AuthContext from "../apis/context/AuthProvider";
+import { useLocation } from "react-router-dom";
+
 
 const IssuePage = () => {
 
     const author = "Lavin Yakiv";
-    const address = "Olympijska 1902/5";
     const category = "Item";
     const publishedDate = "23.07.2023";
     const issueName = "Issue 000-000-000";
@@ -25,14 +28,172 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
     const [approveOpened, setApproveOpened] = React.useState(false);
     const [rejectOpened, setRejectOpened] = React.useState(false);
     const [dialogOpen, setDialogOpen] = React.useState(false);
+    const [errorOpened, setErrorOpened] = React.useState(false);
+    const [rejectReason, setRejectReason] = React.useState("")
+    const [image, setImage] = React.useState();
+    const [address, setAddress] = React.useState("")
     const classes = useStyles();
-    console.log(classes.topHeader)
-
-    const approve = () => { setApproveOpened(true); }
-    const reject = () => {
-        setDialogOpen(false);
-        setRejectOpened(true);
+    const { getToken } = useContext(AuthContext)
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    const [issue, setIssue] = React.useState({
+        author: "",
+        address: "",
+        category: "",
+        publishedDate: "",
+        name: "loading...",
+        description: "loading...",
+        photo:"",
+        status:"loading..."
+    });
+    console.log(params)
+    console.log(id);
+    const url = API_BASE + '/admin/issues/' + id;
+    const getIssue = () => {
+        console.log("got here")
+       
     }
+
+    const getAuthor =  (uid) => {
+        return getAxiosInstance(getToken()).get(`${API_BASE}/admin/residents/${uid}`)
+    }
+
+    const getCategory = (id) => {
+        return getAxiosInstance(getToken()).get(`${API_BASE}/categories/${id}`)
+    }
+
+    const getPhoto = async (localUrl) =>
+    {
+        const config = { responseType: 'blob' };
+        
+        await getAxiosInstance(getToken()).get(`${localUrl}?alt=media`, config)
+        .then(resp => 
+            {
+                setImage(URL.createObjectURL(resp.data));
+            })
+        
+        ;
+    } 
+
+    const changeTextAreaContent = (e) =>
+    {
+        setRejectReason(e.target.value)
+    }
+
+    const rejectIssue = (id, comment) =>
+    {
+        return getAxiosInstance(getToken()).put(`${API_BASE}/admin/issues/${id}/decline`);
+
+    } 
+
+    const approveIssue = (id) =>
+    {
+        return getAxiosInstance(getToken()).put(`${API_BASE}/admin/issues/${id}/approve`);
+    } 
+
+
+
+    const getIssues = async () => 
+    {
+        const response = await getAxiosInstance(getToken()).get(url)
+        const authorResponce = await getAuthor(response.data.authorUid);
+        const categoryResp = await getCategory(response.data.categoryId);
+        const author = authorResponce.data.firstName + " " + authorResponce.data.lastName;
+        const category = categoryResp.data.name;
+        if (response.data.photo!=null)
+        {
+            const photo = getPhoto(response.data.photo);
+            console.log(photo)
+        }
+
+        console.log(response)
+        getAddress(response.data.coordinates.longitude, response.data.coordinates.latitude)
+            .then(resp => {
+                setAddress(resp.data.features[0].place_name)
+                console.log(resp)
+            })
+
+        setIssue(
+            {
+                author: author,
+                address: address,
+                category: category,
+                publishedDate: response.data.creationDate,
+                name:response.data.title,
+                description:response.data.description,
+                photo:response.data.photo,
+                status:response.data.status
+            }
+        )
+        console.log(author)
+    }
+
+    useEffect(() => {
+        console.log("got here")
+/*
+        axios.get(url, {
+            headers: {
+            'Authorization': `Bearer ${getToken()}`
+        }})
+            .then(responce => {
+                console.log(responce.data.categoryId)
+                let issueTemp = 
+                {
+                    author: "Author",
+                    address: "Address",
+                    category: responce.data.categoryId,
+                    publishedDate: responce.data.creationDate,
+                    name: responce.data.title,
+                    description: responce.data.description,
+                    url: responce.data.photo
+                }
+                axios.get(API_BASE+'/residents/'+responce.data['authorUid'], {
+                    headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }}).
+                then(r => {
+                    const name = r.data.firstName + ' ' + r.data.lastName;
+                    issueTemp.author = name;
+                    setIssue(issueTemp);
+                })
+                console.log(issueTemp)                
+            }
+            )
+            .catch(e => console.log("Can not fetch"));*/
+            getIssues()
+    }, [url])
+
+
+    
+    const approve = async () => { 
+        const response = await approveIssue(id);
+        console.log(response);
+        if (Math.floor(response.status/100) == 2)
+        {
+            setApproveOpened(true);
+        }
+        else
+        {
+            console.log(response.status)
+            setErrorOpened(true);
+        } 
+    }
+    const reject = async () => {
+        console.log(rejectReason);
+        const response = await rejectIssue(id, rejectReason);
+        if(Math.floor(response.status/100) == 2)
+        {
+            setDialogOpen(false);
+            setRejectOpened(true);    
+        }
+        else
+        {
+            console.log(response.status)
+            setErrorOpened(true);
+        }
+    }
+
     return (
         <Grid item xs={9} >
             <Snackbar
@@ -48,19 +209,30 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
             </Snackbar>
             <Snackbar
                 sx={{ width: '80%' }}
+                open={errorOpened}
+                autoHideDuration={6000} // Adjust the duration as needed
+                onClose={() => setErrorOpened(false)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setErrorOpened(false)} variant="filled" severity="error" sx={{ width: '80%' }}>
+                    Action was not successfull
+                </Alert>
+            </Snackbar>
+            <Snackbar
+                sx={{ width: '80%' }}
                 open={rejectOpened}
                 autoHideDuration={6000} // Adjust the duration as needed
                 onClose={() => setRejectOpened(false)}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
-                <Alert onClose={() => setRejectOpened(false)} variant="filled" severity="error" sx={{ width: '80%' }}>
+                <Alert onClose={() => setRejectOpened(false)} variant="filled" severity="success" sx={{ width: '80%' }}>
                     Issue rejected
                 </Alert>
             </Snackbar>
             <Grid container spacing={1} className={classes.topHeader}>
 
                 <Typography variant={'h4'}>
-                    Issue 000-000-000
+                    {issue.name}
                 </Typography>
 
             </Grid>
@@ -71,13 +243,13 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                             component="img"
                             height='256px'
                             alt="Issue problem"
-                            src={bananaImage}
+                            src={image}
                             fit="contain"
                         />
 
                         <CardHeader title="Description" />
                         <CardContent>
-                            <Typography variant="body2">{issueDescription}</Typography>
+                            <Typography variant="body2">{issue.description}</Typography>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -85,11 +257,11 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                     <Card style={{ minWidth: 430, maxWidth: 500 }}  >
                         <CardHeader title="Information" />
                         <CardContent>
-                            <Typography variant="body2">Author: {author}</Typography>
+                            <Typography variant="body2">Author: {issue.author}</Typography>
                             <Typography variant="body2">Address: {address}</Typography>
-                            <Typography variant="body2">Category: {category}</Typography>
-                            <Typography variant="body2">Published: {publishedDate}</Typography>
-                            <Chip label="Minor damage" sx={{ mt: 2 }} />
+                            <Typography variant="body2">Category: {issue.category}</Typography>
+                            <Typography variant="body2">Created: {issue.publishedDate}</Typography>
+                            <Chip label={issue.status} sx={{ mt: 2 }} />
                         </CardContent>
                     </Card>
                 </Grid>
@@ -113,7 +285,8 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                                     fullWidth
                                     variant="standard"
                                     multiline
-                                    rows = '3'
+                                    rows='3'
+                                    onChange={changeTextAreaContent}
                                 />
                             </DialogContent>
                             <DialogActions>

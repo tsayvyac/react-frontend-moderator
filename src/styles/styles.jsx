@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
         flexDirection:'column',
         width:'200px',
         height:'100vh',
-        position:'relative',
+        position: "sticky",
         flexGrow:'1',
         marginLeft:'7px',
         marginTop:'7px',

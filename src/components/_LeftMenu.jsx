@@ -4,23 +4,30 @@ import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 import PeopleIcon from "@mui/icons-material/People";
 import React from "react";
 import useStyles from "../styles/styles";
+import {useNavigate} from "react-router-dom";
 
 const _LeftMenu = () => {
-
+    const nav = useNavigate();
     const classes = useStyles()
+    const handleUsers = () => {
+        nav('/users?page=1');
+    };
+    const handleIssues = () => {
+        nav('/main?page=1');
+    };
 
     return (
-        <Grid item xs={2}>
+        <Grid item xs={2} elevation={3} style={{ position: "sticky"}}>
             <Box className={classes.leftMenuStyle}>
                 <div>
                     <Badge badgeContent={1} color="error">
                         <ErrorRoundedIcon className={classes.leftMenuIconStyle} />
                     </Badge>
-                    <Button variant="text" href = "/main">Issues</Button>
+                    <Button variant="text" onClick={handleIssues}>Issues</Button>
                 </div>
                 <div>
                     <PeopleIcon className={classes.leftMenuIconStyle} />
-                    <Button variant="text" href = "/users">User management</Button>
+                    <Button variant="text" onClick={handleUsers}>User management</Button>
                 </div>
             </Box>
         </Grid>

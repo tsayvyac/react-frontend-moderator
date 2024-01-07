@@ -1,29 +1,47 @@
-import { Card, CardActions, CardContent, CardHeader, CardMedia, Grid, Typography } from "@material-ui/core";
-import { Box, Button, FormControl, InputLabel, MenuItem, Pagination, Select, TextField } from "@mui/material";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
+import {Card, Grid, Typography} from "@material-ui/core";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, CircularProgress, TextField} from "@mui/material";
 import React from "react";
 import useStyles from "../styles/styles";
 import Chip from '@mui/material/Chip';
-import { minWidth } from "@material-ui/system";
-import bananaImage from "../img/banana.jpg"
-import { classExpression } from "@babel/types";
-import { DataGrid } from '@mui/x-data-grid';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
+import {DataGrid} from '@mui/x-data-grid';
 import Avatar from '@mui/material/Avatar';
+import {API_BASE, getAxiosInstance} from "../apis/apis";
+import axios from "axios";
+import { useEffect, useContext, useState } from "react";
+import AuthContext from "../apis/context/AuthProvider";
+import {Link,useNavigate} from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 
 
-const usersText =
-    '{"users" : [{"name": "Ihor","surname": "Dagon","role": "ululu","email": "bobo@gmail.com","status": "active", "id":1},{"name": "Pavlo","surname": "Dagon","role": "Admin","email": "bob2o@gmail.com","status": "banned", "id":2}]}';
+
 
 const UserModerationPage = () => {
-    const [status, setStatus] = React.useState('');
-    const [role, setRole] = React.useState('');
+    const { getToken } = useContext(AuthContext)
+    const location = useLocation();
+    let search = location.search;
+    const params = new URLSearchParams(search);
+    const nav = useNavigate()
+
+
+    if(!params.get('page')) {
+        params.set('page', '0')
+        nav('?page=0')
+        console.log("Pushing state")
+    }
+    const [status, setStatus] = React.useState('all');
+    const [role, setRole] = React.useState('residents');
+    const [users, setUsers] = React.useState([]);
+    const [searchState, setSearchState] = React.useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const [totalItems, setTotalitems] = React.useState(10);
+    const [rows, setRows] = React.useState([]);
+
+
+
+    const [paginationModel, setPaginationModel] = React.useState({
+        page: 0,
+        pageSize: 5,
+      });
 
     const applyRoleChange = (e) => {
         setRole(e.target.value);
@@ -31,25 +49,99 @@ const UserModerationPage = () => {
 
     const applyStatusChange = (e) => {
         setStatus(e.target.value);
+        console.log("itting staus")
     }
 
-    const classes = useStyles();
-    const userList = JSON.parse(usersText);
-    const rows = userList.users.map(user => {
-        const r = {
-            name: user.name + ' ' + user.surname,
-            avatar: 'https://images.pexels.com/photos/13037579/pexels-photo-13037579.jpeg',
-        }
-        user.name = r;
-        return user;
-    })
+    function searchHandler(title) {
+        setSearchState(title)
+    }
 
+    const newUserHandler = () => {
+        window.location.replace('/#/users/add');
+    };
+
+
+    const classes = useStyles();
+
+    function buildURI() {
+        let uri = `${API_BASE}/admin/${role}?size=${paginationModel.pageSize}&page=${(parseInt(paginationModel.page))}`
+        if (status !== '' & status !== 'all')
+        {
+            uri += `&status=${status}`
+        }
+        if(searchState.length !== 0) {
+            uri += `&firstName_like=${searchState}`
+        }
+
+        console.log(uri);
+        return uri;
+    }
+
+    useEffect(() => 
+    {
+        let temp = users; //clone(users)
+        console.log(temp)
+        let trows = temp.map(user => {
+            let r;
+            if (role=='residents')
+            {
+            r = {
+                name:user.firstName + ' ' + user.lastName,
+                avatar: user.photo,
+                id: user.uid
+            }
+        }
+            else
+            {
+                r = {
+                    name:user.name,
+                    avatar: user.photo,
+                    id: user.uid
+                }  
+            }
+            user.name = r;
+            user.id = user.uid;
+            return user;
+        })
+        setRows(trows);
+    }, [users])
+
+    
+    const clone = (obj) =>
+    {
+       // return JSON.parse(JSON.stringify(obj));
+    }
+
+
+const getUsers = async () =>
+{
+    let pg = parseInt(params.get('page'));
+        nav('?page='+(parseInt(paginationModel.page)+1))
+        axios.get(buildURI(), {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        })
+            .then(response => {
+                console.log(role)
+
+                setUsers(response.data[role])
+                setTotalitems(response.data.totalItems)
+            })
+            .catch(error => console.log(error))
+}
+
+    useEffect(() => {
+        setIsLoading(true)
+        getUsers()
+        setIsLoading(false);
+    }, [role, status, paginationModel, searchState]);
 
     const columns = [
         {
             field: 'name', headerName: 'User',
             width: 300,
-            renderCell: (params) => <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name} /><Grid item style={{ margin: "10px" }}>{params.value.name} </Grid></Grid>
+            renderCell: (params) => <Grid container alignItems="center" ><Avatar src={params.value.avatar} alt={params.value.name} /><Grid item style={{ margin: "10px" }}><Link to = {"/user?role="+role+'&uid='+params.value.id}>{params.value.name} </Link></Grid></Grid>
         },
         {
             field: 'email',
@@ -73,13 +165,15 @@ const UserModerationPage = () => {
                 const status = params.value;
                 
                 let state = 'default';
-                if(status === "banned")                
+                if(status === "BLOCKED")
                 {
                     state = "warning";
                 }
-                
-                    
-                
+                if( status === "DELETED")
+                {
+                    state = "error"
+                }
+
                 return (
                     <Chip
                         label = {status}
@@ -96,6 +190,16 @@ const UserModerationPage = () => {
     ];
 
 
+    if(isLoading) {
+        return (
+            <Grid  item xs={10}>
+                <Box sx={{display: 'flex', justifyContent: 'center', height:"80%", alignItems:"center"}}>
+                    <CircularProgress size={110}/>
+                </Box>
+            </Grid>
+        );
+    }
+
 
     return (<Grid item xs={9}>
         <Grid container spacing={1} className={classes.topHeader}>
@@ -109,7 +213,7 @@ const UserModerationPage = () => {
             <Grid container className={classes.userManagementSearchItems}>
                 <Grid item xs={7} >
                     <FormControl fullWidth style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <TextField id="outlined-basic" label="Name, email, etc..." variant="outlined" style={{ height: "50px" }} />
+                        <TextField id="outlined-basic" label="Name" variant="outlined" style={{ height: "50px" }}  onChange={(e) => searchHandler( e.target.value)}/>
                         <Box style={{ display: 'flex', flexDirection: 'row' }}>
                             <FormControl>
                                 <InputLabel htmlFor="user-role-select-label">Role</InputLabel>
@@ -119,10 +223,9 @@ const UserModerationPage = () => {
                                     onChange={applyRoleChange}
                                     style={{ width: "200px", height: '50px' }}
                                 >
-                                    <MenuItem value={'all'}>All</MenuItem>
-                                    <MenuItem value={'resident'}>Resident</MenuItem>
-                                    <MenuItem value={'service'}>Public service</MenuItem>
-                                    <MenuItem value={'analyst'}>Analyst</MenuItem>
+                                    <MenuItem value={'residents'}>Resident</MenuItem>
+                                    <MenuItem value={'services'}>Public service</MenuItem>
+                                    <MenuItem value={'analysts'}>Analyst</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
@@ -137,26 +240,25 @@ const UserModerationPage = () => {
                                 >
                                     <MenuItem value={'all'}>All</MenuItem>
                                     <MenuItem value={'active'}>Active</MenuItem>
-                                    <MenuItem value={'banned'}>Banned</MenuItem>
+                                    <MenuItem value={'blocked'}>Blocked</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
                     </FormControl>
                 </Grid>
                 <Grid >
-                    <Button variant='contained' href = 'users/add'>New user</Button>
+                    <Button variant='contained' onClick={newUserHandler}>New user</Button>
                 </Grid>
             </Grid>
 
 
             <DataGrid
                 rows={rows}
+                rowCount={totalItems}
                 columns={columns}
-                initialState={{
-                    pagination: {
-                        paginationModel: { page: 0, pageSize: 5 },
-                    },
-                }}
+                paginationModel={paginationModel}
+                paginationMode="server"
+                onPaginationModelChange={setPaginationModel}
                 pageSizeOptions={[5, 10]}
                 checkboxSelection
             />
