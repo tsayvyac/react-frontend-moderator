@@ -20,7 +20,6 @@ import { useLocation } from "react-router-dom";
 const IssuePage = () => {
 
     const author = "Lavin Yakiv";
-    const address = "Olympijska 1902/5";
     const category = "Item";
     const publishedDate = "23.07.2023";
     const issueName = "Issue 000-000-000";
@@ -32,11 +31,14 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
     const [errorOpened, setErrorOpened] = React.useState(false);
     const [rejectReason, setRejectReason] = React.useState("")
     const [image, setImage] = React.useState();
+    const [address, setAddress] = React.useState("")
     const classes = useStyles();
     const { getToken } = useContext(AuthContext)
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
+    const geotoken = 'pk.eyJ1IjoiaGVyYXNreXJwbSIsImEiOiJjbHIzam80cmoxYThqMmtvMXRoMnFucW1rIn0.-WSVCiwfjWwlylIx_tGXPA'
+    const geo_base = "https://api.mapbox.com/geocoding/v5/mapbox.places/"
     const [issue, setIssue] = React.useState({
         author: "",
         address: "",
@@ -92,6 +94,8 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
         return getAxiosInstance(getToken()).put(`${API_BASE}/admin/issues/${id}/approve`);
     } 
 
+
+
     const getIssues = async () => 
     {
         const response = await getAxiosInstance(getToken()).get(url)
@@ -106,10 +110,18 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
         }
 
         console.log(response)
+    
+        axios.get(`${geo_base}${response.data.coordinates.longitude},${response.data.coordinates.latitude}.json?access_token=${geotoken}`)
+        .then(resp => 
+            {
+                setAddress(resp.data.features[0].place_name)
+                console.log(resp)
+            })
+
         setIssue(
             {
                 author: author,
-                address: response.data.coordinates.latitude + ' ' + response.data.coordinates.longitude,
+                address: address,
                 category: category,
                 publishedDate: response.data.creationDate,
                 name:response.data.title,
@@ -250,7 +262,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                         <CardHeader title="Information" />
                         <CardContent>
                             <Typography variant="body2">Author: {issue.author}</Typography>
-                            <Typography variant="body2">Address: {issue.address}</Typography>
+                            <Typography variant="body2">Address: {address}</Typography>
                             <Typography variant="body2">Category: {issue.category}</Typography>
                             <Typography variant="body2">Created: {issue.publishedDate}</Typography>
                             <Chip label={issue.status} sx={{ mt: 2 }} />
