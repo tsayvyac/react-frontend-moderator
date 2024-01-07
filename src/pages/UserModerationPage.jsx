@@ -15,7 +15,6 @@ import { useLocation } from 'react-router-dom';
 
 
 
-
 const UserModerationPage = () => {
     const { getToken } = useContext(AuthContext)
     const location = useLocation();
@@ -34,6 +33,8 @@ const UserModerationPage = () => {
     const [users, setUsers] = React.useState([]);
     const [searchState, setSearchState] = React.useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const [totalItems, setTotalitems] = React.useState(10);
+    const [rows, setRows] = React.useState([]);
 
 
 
@@ -63,7 +64,7 @@ const UserModerationPage = () => {
     const classes = useStyles();
 
     function buildURI() {
-        let uri = `${API_BASE}/admin/${role}?size=${paginationModel.pageSize}&page=${(parseInt(paginationModel.page)+1)}`
+        let uri = `${API_BASE}/admin/${role}?size=${paginationModel.pageSize}&page=${(parseInt(paginationModel.page))}`
         if (status !== '' & status !== 'all')
         {
             uri += `&status=${status}`
@@ -76,17 +77,41 @@ const UserModerationPage = () => {
         return uri;
     }
 
-
-    let rows = users.map(user => {
-        const r = {
-            name: user.firstName + ' ' + user.lastName,
-            avatar: user.photo,
-            id: user.uid
+    useEffect(() => 
+    {
+        let temp = users; //clone(users)
+        console.log(temp)
+        let trows = temp.map(user => {
+            let r;
+            if (role=='residents')
+            {
+            r = {
+                name:user.firstName + ' ' + user.lastName,
+                avatar: user.photo,
+                id: user.uid
+            }
         }
-        user.name = r;
-        user.id = user.uid;
-        return user;
-    })
+            else
+            {
+                r = {
+                    name:user.name,
+                    avatar: user.photo,
+                    id: user.uid
+                }  
+            }
+            user.name = r;
+            user.id = user.uid;
+            return user;
+        })
+        setRows(trows);
+    }, [users])
+
+    
+    const clone = (obj) =>
+    {
+       // return JSON.parse(JSON.stringify(obj));
+    }
+
 
 const getUsers = async () =>
 {
@@ -98,8 +123,10 @@ const getUsers = async () =>
             }
         })
             .then(response => {
-                console.log(response.data[role])
+                console.log(role)
+
                 setUsers(response.data[role])
+                setTotalitems(response.data.totalItems)
             })
             .catch(error => console.log(error))
 }
@@ -227,7 +254,7 @@ const getUsers = async () =>
 
             <DataGrid
                 rows={rows}
-                rowCount={2312}
+                rowCount={totalItems}
                 columns={columns}
                 paginationModel={paginationModel}
                 paginationMode="server"
