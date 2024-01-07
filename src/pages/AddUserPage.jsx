@@ -44,6 +44,7 @@ const AddUserPage = () => {
             setError('NONE-ERROR')
             return true
         }
+        setIsLoading(false)
         return false
     }
     function handleSubmit(e) {
@@ -60,9 +61,10 @@ const AddUserPage = () => {
             let role = formData.get('radio-buttons-group')
             getAxiosInstance(getToken()).post(buildURI(role), JSON.stringify(user))
                 .then(res => {
-                    setIsLoading(false)
                     setOpen(true)
-                }).catch(error => {
+                    setIsLoading(false)
+                })
+                .catch(error => {
                 setMsg(error)
                 setOpen(true)
             })

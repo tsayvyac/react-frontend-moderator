@@ -11,7 +11,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import {API_BASE, getAxiosInstance} from "../apis/apis";
+import {API_BASE, getAddress, getAxiosInstance} from "../apis/apis";
 import axios from "axios";
 import AuthContext from "../apis/context/AuthProvider";
 import { useLocation } from "react-router-dom";
@@ -37,8 +37,6 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
-    const geotoken = 'pk.eyJ1IjoiaGVyYXNreXJwbSIsImEiOiJjbHIzam80cmoxYThqMmtvMXRoMnFucW1rIn0.-WSVCiwfjWwlylIx_tGXPA'
-    const geo_base = "https://api.mapbox.com/geocoding/v5/mapbox.places/"
     const [issue, setIssue] = React.useState({
         author: "",
         address: "",
@@ -110,10 +108,8 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
         }
 
         console.log(response)
-    
-        axios.get(`${geo_base}${response.data.coordinates.longitude},${response.data.coordinates.latitude}.json?access_token=${geotoken}`)
-        .then(resp => 
-            {
+        getAddress(response.data.coordinates.longitude, response.data.coordinates.latitude)
+            .then(resp => {
                 setAddress(resp.data.features[0].place_name)
                 console.log(resp)
             })
