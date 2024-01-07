@@ -83,7 +83,10 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
 
     const rejectIssue = (id, comment) =>
     {
-        return getAxiosInstance(getToken()).put(`${API_BASE}/admin/issues/${id}/decline`);
+        const payload = {
+            comment: comment
+        }
+        return getAxiosInstance(getToken()).put(`${API_BASE}/admin/issues/${id}/decline`, payload);
 
     } 
 
@@ -101,9 +104,11 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
         const categoryResp = await getCategory(response.data.categoryId);
         const author = authorResponce.data.firstName + " " + authorResponce.data.lastName;
         const category = categoryResp.data.name;
+        console.log(response)
         if (response.data.photo!=null)
         {
             const photo = getPhoto(response.data.photo);
+
             console.log(photo)
         }
 
