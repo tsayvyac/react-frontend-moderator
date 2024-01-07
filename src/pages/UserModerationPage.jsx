@@ -10,16 +10,19 @@ import axios from "axios";
 import { useEffect, useContext, useState } from "react";
 import AuthContext from "../apis/context/AuthProvider";
 import {Link,useNavigate} from "react-router-dom";
+import { useLocation } from 'react-router-dom';
+
 
 
 
 
 const UserModerationPage = () => {
     const { getToken } = useContext(AuthContext)
-
-    let search = window.location.search;
+    const location = useLocation();
+    let search = location.search;
     const params = new URLSearchParams(search);
     const nav = useNavigate()
+
 
     if(!params.get('page')) {
         params.set('page', '0')

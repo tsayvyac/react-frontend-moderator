@@ -31,7 +31,10 @@ const UserActionPage = () => {
                 return res
             })
             .then(async procRes => {
+                console.log(procRes)
                 const config = { responseType: 'blob' };
+                if (procRes.data.photo != null)
+                {
                 await getAxiosInstance(getToken())
                     .get(`${procRes.data.photo}?alt=media`, config)
                     .then( blobFile => {
@@ -43,6 +46,17 @@ const UserActionPage = () => {
                         })
                         setIsLoading(false)
                     })
+                }
+                else
+                {
+                    setUser({
+                        status: procRes.data.status,
+                        name: procRes.data.name,
+                        description: procRes.data.description,
+                        photo:""
+                    })
+                    setIsLoading(false) 
+                }
             })
             .catch(error => console.log(error))
     }

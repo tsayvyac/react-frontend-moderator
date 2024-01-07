@@ -31,6 +31,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [errorOpened, setErrorOpened] = React.useState(false);
     const [rejectReason, setRejectReason] = React.useState("")
+    const [image, setImage] = React.useState();
     const classes = useStyles();
     const { getToken } = useContext(AuthContext)
     const location = useLocation();
@@ -62,9 +63,17 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
         return getAxiosInstance(getToken()).get(`${API_BASE}/categories/${id}`)
     }
 
-    const getPhoto = (localUrl) =>
+    const getPhoto = async (localUrl) =>
     {
-        return getAxiosInstance(getToken()).get(localUrl);
+        const config = { responseType: 'blob' };
+        
+        await getAxiosInstance(getToken()).get(`${localUrl}?alt=media`, config)
+        .then(resp => 
+            {
+                setImage(URL.createObjectURL(resp.data));
+            })
+        
+        ;
     } 
 
     const changeTextAreaContent = (e) =>
@@ -90,8 +99,12 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
         const categoryResp = await getCategory(response.data.categoryId);
         const author = authorResponce.data.firstName + " " + authorResponce.data.lastName;
         const category = categoryResp.data.name;
-        const photo = getPhoto(response.data.photo);
-        console.log(photo)
+        if (response.data.photo!=null)
+        {
+            const photo = getPhoto(response.data.photo);
+            console.log(photo)
+        }
+
         console.log(response)
         setIssue(
             {
@@ -188,7 +201,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
             </Snackbar>
             <Snackbar
                 sx={{ width: '80%' }}
-                open={approveOpened}
+                open={errorOpened}
                 autoHideDuration={6000} // Adjust the duration as needed
                 onClose={() => setErrorOpened(false)}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -222,7 +235,7 @@ Mauris suscipit, ligula sit amet pharetra semper, nibh ante cursus purus, vel sa
                             component="img"
                             height='256px'
                             alt="Issue problem"
-                            src={issue.photo}
+                            src={image}
                             fit="contain"
                         />
 
