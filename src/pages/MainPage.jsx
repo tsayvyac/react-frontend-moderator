@@ -14,17 +14,11 @@ import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 import React, {useContext, useEffect, useState} from "react";
 import useStyles from "../styles/styles";
 import {Link, useNavigate} from "react-router-dom";
-import {API_BASE, getAxiosInstance} from "../apis/apis";
+import {API_BASE, getAddress, getAxiosInstance} from "../apis/apis";
 import AuthContext from "../apis/context/AuthProvider";
 import { useLocation } from 'react-router-dom';
 
 
-//API key: AIzaSyC6-kPQq0Hv7gacfZ_1NenpyS_a1ahV910
-// Map id: 8682b82c7c8bf444
-//     "email": "moderator@better-city.mikita.dev",
-//     "password": "12345678",
-//     "returnSecureToken": true
-// }
 const MainPage = () => {
     const location = useLocation();
     const nav = useNavigate()
@@ -97,6 +91,7 @@ const MainPage = () => {
 
     const getIssues = async () => {
         const response = await getAxiosInstance(getToken()).get(buildURI())
+        console.log(response)
         setTotalPages(response.data.totalPages);
         await Promise.all(response.data.issues.map(async issue => {
             const authorResponse = await getAuthor(issue.authorUid);
@@ -104,12 +99,16 @@ const MainPage = () => {
             const categoryResponse = await getCategory(issue.categoryId)
             const issueCategory = categoryResponse.data.name
             const issueDate = new Date(issue.creationDate)
+            const long = issue.coordinates.longitude
+            const lat = issue.coordinates.latitude
+            const street = await getAddress(long, lat).then(res => res.data.features[0].place_name)
             const dateString = issueDate.toISOString().split('T')[0];
             return{
                 ...issue,
                 author:issueAuthor,
                 category:issueCategory,
-                creationDate:dateString
+                creationDate:dateString,
+                street: street
             }
         }))
             .then(succ => {
@@ -221,6 +220,8 @@ const MainPage = () => {
                                         <Typography sx={{fontSize: 14}} color="text.secondary" variant={'subtitle2'}
                                                     gutterBottom>
                                             {`${issue.author} ${issue.creationDate}`}
+                                        <br/>
+                                            {`${issue.street}`}
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={3} md={2}>
